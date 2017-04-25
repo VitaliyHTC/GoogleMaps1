@@ -1,6 +1,7 @@
 package com.vitaliyhtc.googlemaps1;
 
 import android.Manifest;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -9,10 +10,12 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -25,12 +28,22 @@ public class MapsActivity extends AppCompatActivity
         GoogleMap.OnMyLocationButtonClickListener,
         ActivityCompat.OnRequestPermissionsResultCallback {
 
+    private static final String KEY_CAMERA_POSITION_SETTINGS = "CameraPosition_Settings";
+
+    private static final String KEY_CAMERA_POSITION_BEARING = "bearing";
+    private static final String KEY_CAMERA_POSITION_TARGET_LAT = "target_lat";
+    private static final String KEY_CAMERA_POSITION_TARGET_LNG = "target_lng";
+    private static final String KEY_CAMERA_POSITION_TILT = "tilt";
+    private static final String KEY_CAMERA_POSITION_ZOOM = "zoom";
+
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     private boolean mPermissionDenied = false;
 
     private GoogleMap mMap;
 
-    private Realm realm;
+    //private Realm realm;
+
+    private CameraPosition mCameraPosition;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,13 +55,19 @@ public class MapsActivity extends AppCompatActivity
         mapFragment.getMapAsync(this);
 
         // Create the Realm instance
-        realm = Realm.getDefaultInstance();
+        // realm = Realm.getDefaultInstance();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        saveCameraPosition();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        realm.close();
+        //realm.close();
     }
 
     /**
@@ -66,9 +85,11 @@ public class MapsActivity extends AppCompatActivity
 
         // Do other work here
         initUiSettings();
+        restoreCameraPosition();
         enableMyLocation();
         initListeners();
         restoreMarkerOnMap();
+
 
         // Add a marker in Sydney and move the camera
         /*
@@ -174,6 +195,31 @@ public class MapsActivity extends AppCompatActivity
 
     private void restoreMarkerOnMap() {
         // TODO: 3. on app start restore all markers.
+    }
+
+    private void saveCameraPosition() {
+        CameraPosition cameraPosition = mMap.getCameraPosition();
+
+        SharedPreferences.Editor editor = MapsActivity.this.getSharedPreferences(KEY_CAMERA_POSITION_SETTINGS, 0).edit();
+        editor.putFloat(KEY_CAMERA_POSITION_BEARING, cameraPosition.bearing);
+        editor.putFloat(KEY_CAMERA_POSITION_TARGET_LAT, (float) cameraPosition.target.latitude);
+        editor.putFloat(KEY_CAMERA_POSITION_TARGET_LNG, (float) cameraPosition.target.longitude);
+        editor.putFloat(KEY_CAMERA_POSITION_TILT, cameraPosition.tilt);
+        editor.putFloat(KEY_CAMERA_POSITION_ZOOM, cameraPosition.zoom);
+        editor.apply();
+    }
+
+    private void restoreCameraPosition() {
+        // default values move marker to Sydney
+        SharedPreferences pref = MapsActivity.this.getSharedPreferences(KEY_CAMERA_POSITION_SETTINGS, 0);
+        float bearing = pref.getFloat(KEY_CAMERA_POSITION_BEARING, 0);
+        double lat = (double) pref.getFloat(KEY_CAMERA_POSITION_TARGET_LAT, -34);
+        double lng = (double) pref.getFloat(KEY_CAMERA_POSITION_TARGET_LNG, 151);
+        float tilt = pref.getFloat(KEY_CAMERA_POSITION_TILT, 0);
+        float zoom = pref.getFloat(KEY_CAMERA_POSITION_ZOOM, 9);
+
+        CameraPosition cameraPosition = new CameraPosition(new LatLng(lat, lng), zoom, tilt, bearing);
+        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
     }
 
 }

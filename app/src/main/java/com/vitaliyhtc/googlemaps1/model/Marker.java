@@ -1,8 +1,6 @@
 package com.vitaliyhtc.googlemaps1.model;
 
-import io.realm.RealmObject;
-
-public class Marker extends RealmObject {
+public class Marker {
 
     private double latitude;
     private double longitude;
