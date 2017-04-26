@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView  xmlns:android="http://schemas.android.com/apk/res/android"
+             android:id="@+id/main_store_detail_linear_layout_container"
+             android:orientation="vertical"
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        >
+
+        <TextView
+            android:id="@+id/tv_title"
+            android:layout_marginTop="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="0dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/new_marker_dialog_key_marker_title"
+            android:textSize="16sp"
+            android:textColor="@color/detail_activity_key_text_color"
+            />
+        <EditText
+            android:id="@+id/et_title"
+            android:layout_marginTop="0dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/new_marker_dialog_marker_title_hint"
+            />
+
+        <TextView
+            android:id="@+id/tv_marker_title"
+            android:layout_marginTop="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="0dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/new_marker_dialog_key_marker_icon_title"
+            android:textSize="16sp"
+            android:textColor="@color/detail_activity_key_text_color"
+            />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:layout_centerHorizontal="true"
+                >
+
+                <ImageView
+                    android:id="@+id/iv_marker_red"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/ic_place_red_48dp"
+                    android:contentDescription="@string/new_marker_dialog_red_color_marker"
+                    />
+
+                <ImageView
+                    android:id="@+id/iv_marker_orange"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_toEndOf="@+id/iv_marker_red"
+                    android:layout_toRightOf="@+id/iv_marker_red"
+                    android:src="@drawable/ic_place_orange_48dp"
+                    android:contentDescription="@string/new_marker_dialog_orange_color_marker"
+                    />
+
+                <ImageView
+                    android:id="@+id/iv_marker_yellow"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_toEndOf="@+id/iv_marker_orange"
+                    android:layout_toRightOf="@+id/iv_marker_orange"
+                    android:src="@drawable/ic_place_yellow_48dp"
+                    android:contentDescription="@string/new_marker_dialog_yellow_color_marker"
+                    />
+
+                <ImageView
+                    android:id="@+id/iv_marker_green"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_toEndOf="@+id/iv_marker_yellow"
+                    android:layout_toRightOf="@+id/iv_marker_yellow"
+                    android:src="@drawable/ic_place_green_48dp"
+                    android:contentDescription="@string/new_marker_dialog_green_color_marker"
+                    />
+
+                <ImageView
+                    android:id="@+id/iv_marker_cyan"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_toEndOf="@+id/iv_marker_green"
+                    android:layout_toRightOf="@+id/iv_marker_green"
+                    android:src="@drawable/ic_place_cyan_48dp"
+                    android:contentDescription="@string/new_marker_dialog_cyan_color_marker"
+                    />
+
+                <ImageView
+                    android:id="@+id/iv_marker_azure"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_below="@+id/iv_marker_red"
+                    android:src="@drawable/ic_place_azure_48dp"
+                    android:contentDescription="@string/new_marker_dialog_azure_color_marker"
+                    />
+
+                <ImageView
+                    android:id="@+id/iv_marker_blue"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_below="@+id/iv_marker_red"
+                    android:layout_toEndOf="@+id/iv_marker_azure"
+                    android:layout_toRightOf="@+id/iv_marker_azure"
+                    android:src="@drawable/ic_place_blue_48dp"
+                    android:contentDescription="@string/new_marker_dialog_blue_color_marker"
+                    />
+
+                <ImageView
+                    android:id="@+id/iv_marker_violet"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_below="@+id/iv_marker_red"
+                    android:layout_toEndOf="@+id/iv_marker_blue"
+                    android:layout_toRightOf="@+id/iv_marker_blue"
+                    android:src="@drawable/ic_place_violet_48dp"
+                    android:contentDescription="@string/new_marker_dialog_violet_color_marker"
+                    />
+
+                <ImageView
+                    android:id="@+id/iv_marker_magenta"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_below="@+id/iv_marker_red"
+                    android:layout_toEndOf="@+id/iv_marker_violet"
+                    android:layout_toRightOf="@+id/iv_marker_violet"
+                    android:src="@drawable/ic_place_magenta_48dp"
+                    android:contentDescription="@string/new_marker_dialog_magenta_color_marker"
+                    />
+
+                <ImageView
+                    android:id="@+id/iv_marker_rose"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_below="@+id/iv_marker_red"
+                    android:layout_toEndOf="@+id/iv_marker_magenta"
+                    android:layout_toRightOf="@+id/iv_marker_magenta"
+                    android:src="@drawable/ic_place_rose_48dp"
+                    android:contentDescription="@string/new_marker_dialog_rose_color_marker"
+                    />
+
+            </RelativeLayout>
+        </RelativeLayout>
+
+
+    </LinearLayout>
+
+</ScrollView>

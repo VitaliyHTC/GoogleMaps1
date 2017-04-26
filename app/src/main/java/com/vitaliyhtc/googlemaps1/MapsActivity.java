@@ -21,8 +21,6 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.vitaliyhtc.googlemaps1.util.PermissionUtils;
 
-import io.realm.Realm;
-
 public class MapsActivity extends AppCompatActivity
         implements OnMapReadyCallback,
         GoogleMap.OnMyLocationButtonClickListener,
@@ -102,7 +100,7 @@ public class MapsActivity extends AppCompatActivity
 
     @Override
     public boolean onMyLocationButtonClick() {
-        Toast.makeText(this, R.string.map_ui_my_loaction_button_click_toast_message, Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, R.string.map_ui_my_location_button_click_toast_message, Toast.LENGTH_SHORT).show();
         // Return false so that we don't consume the event and the default behavior still occurs
         // (the camera animates to the user's current position).
         return false;
@@ -180,12 +178,28 @@ public class MapsActivity extends AppCompatActivity
         // onMapLongClick > open DialogWindow where set marker title and select one from
         // predefined marker icons. After that - marker is shown with selected title and icon on map.
 
+        NewMarkerDialog newMarkerDialog = new NewMarkerDialog();
+        newMarkerDialog.setLatLng(latLng);
+        newMarkerDialog.setNewMarkerDialogCallback(new NewMarkerDialog.NewMarkerDialogCallback() {
+            @Override
+            public void onNewMarkerDialogSuccess(com.vitaliyhtc.googlemaps1.model.Marker marker) {
+                MarkerOptions markerOptions = new MarkerOptions()
+                        .position(new LatLng(marker.getLatitude(), marker.getLongitude()))
+                        .title(marker.getTitle())
+                        .icon(BitmapDescriptorFactory.defaultMarker(marker.getIconHue()));
+                Marker marker1 = mMap.addMarker(markerOptions);
+            }
+        });
+        newMarkerDialog.show(getSupportFragmentManager(), "NewMarkerDialog");
+
+        /*
         MarkerOptions markerOptions = new MarkerOptions()
                 .position(latLng)
                 .title(":P")
                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
         Marker marker = mMap.addMarker(markerOptions);
         marker.setTag(0x16);
+        */
     }
 
     private void actionOnMarkerClick(Marker marker) {
@@ -210,7 +224,7 @@ public class MapsActivity extends AppCompatActivity
     }
 
     private void restoreCameraPosition() {
-        // default values move marker to Sydney
+        // default values move camera to Sydney
         SharedPreferences pref = MapsActivity.this.getSharedPreferences(KEY_CAMERA_POSITION_SETTINGS, 0);
         float bearing = pref.getFloat(KEY_CAMERA_POSITION_BEARING, 0);
         double lat = (double) pref.getFloat(KEY_CAMERA_POSITION_TARGET_LAT, -34);
