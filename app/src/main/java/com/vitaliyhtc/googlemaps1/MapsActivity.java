@@ -21,13 +21,20 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.vitaliyhtc.googlemaps1.util.PermissionUtils;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import io.realm.Realm;
+import io.realm.RealmResults;
+
+import static com.vitaliyhtc.googlemaps1.Config.KEY_MARKER_ID;
+
 public class MapsActivity extends AppCompatActivity
         implements OnMapReadyCallback,
         GoogleMap.OnMyLocationButtonClickListener,
         ActivityCompat.OnRequestPermissionsResultCallback {
 
     private static final String KEY_CAMERA_POSITION_SETTINGS = "CameraPosition_Settings";
-
     private static final String KEY_CAMERA_POSITION_BEARING = "bearing";
     private static final String KEY_CAMERA_POSITION_TARGET_LAT = "target_lat";
     private static final String KEY_CAMERA_POSITION_TARGET_LNG = "target_lng";
@@ -39,9 +46,7 @@ public class MapsActivity extends AppCompatActivity
 
     private GoogleMap mMap;
 
-    //private Realm realm;
-
-    private CameraPosition mCameraPosition;
+    private Map<String, Marker> mMarkers;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,9 +56,6 @@ public class MapsActivity extends AppCompatActivity
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-
-        // Create the Realm instance
-        // realm = Realm.getDefaultInstance();
     }
 
     @Override
@@ -62,17 +64,10 @@ public class MapsActivity extends AppCompatActivity
         saveCameraPosition();
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        //realm.close();
-    }
-
     /**
      * Manipulates the map once available.
      * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
+     * This is where we can add markers or lines, add listeners or move the camera.
      * If Google Play services is not installed on the device, the user will be prompted to install
      * it inside the SupportMapFragment. This method will only be triggered once the user has
      * installed Google Play services and returned to the app.
@@ -82,19 +77,12 @@ public class MapsActivity extends AppCompatActivity
         mMap = googleMap;
 
         // Do other work here
+        mMarkers = new HashMap<>();
         initUiSettings();
         restoreCameraPosition();
         enableMyLocation();
         initListeners();
         restoreMarkerOnMap();
-
-
-        // Add a marker in Sydney and move the camera
-        /*
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
-        */
     }
 
 
@@ -174,41 +162,124 @@ public class MapsActivity extends AppCompatActivity
     }
 
     private void actionOnMapLongClick(LatLng latLng) {
-        // TODO: first part of task here
-        // onMapLongClick > open DialogWindow where set marker title and select one from
-        // predefined marker icons. After that - marker is shown with selected title and icon on map.
-
-        NewMarkerDialog newMarkerDialog = new NewMarkerDialog();
-        newMarkerDialog.setLatLng(latLng);
-        newMarkerDialog.setNewMarkerDialogCallback(new NewMarkerDialog.NewMarkerDialogCallback() {
+        MarkerDialog markerDialog = new MarkerDialog();
+        markerDialog.setLatLng(latLng);
+        markerDialog.setMarkerDialogCallback(new MarkerDialog.MarkerDialogCallback() {
             @Override
-            public void onNewMarkerDialogSuccess(com.vitaliyhtc.googlemaps1.model.Marker marker) {
-                MarkerOptions markerOptions = new MarkerOptions()
-                        .position(new LatLng(marker.getLatitude(), marker.getLongitude()))
-                        .title(marker.getTitle())
-                        .icon(BitmapDescriptorFactory.defaultMarker(marker.getIconHue()));
-                Marker marker1 = mMap.addMarker(markerOptions);
+            public void onMarkerDialogSuccess(com.vitaliyhtc.googlemaps1.model.Marker marker) {
+                saveMarkerToRealm(marker);
+                placeMarkerOnMap(marker);
             }
         });
-        newMarkerDialog.show(getSupportFragmentManager(), "NewMarkerDialog");
+        markerDialog.show(getSupportFragmentManager(), "MarkerDialog");
+    }
 
-        /*
+    private void placeMarkerOnMap(com.vitaliyhtc.googlemaps1.model.Marker marker) {
         MarkerOptions markerOptions = new MarkerOptions()
-                .position(latLng)
-                .title(":P")
-                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
-        Marker marker = mMap.addMarker(markerOptions);
-        marker.setTag(0x16);
-        */
+                .position(new LatLng(marker.getLatitude(), marker.getLongitude()))
+                .title(marker.getTitle())
+                .icon(BitmapDescriptorFactory.defaultMarker(marker.getIconHue()));
+        Marker marker1 = mMap.addMarker(markerOptions);
+        marker1.setTag(marker.getId());
+        mMarkers.put(marker.getId(), marker1);
+    }
+
+    private void saveMarkerToRealm(final com.vitaliyhtc.googlemaps1.model.Marker marker) {
+        Realm realm = Realm.getDefaultInstance();
+        realm.executeTransaction(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                realm.copyToRealm(marker);
+            }
+        });
+        realm.close();
     }
 
     private void actionOnMarkerClick(Marker marker) {
         // TODO. 6. onMarkerClick > open new screen with info about this marker.
         // Every marker you can edit or delete.
+
+        MarkerInfoOptionsDialog dialog = new MarkerInfoOptionsDialog();
+        dialog.setMarker(marker);
+        dialog.setCallback(new MarkerInfoOptionsDialog.MarkerInfoOptionsDialogCallback() {
+            @Override
+            public void onMarkerEdit(Marker marker) {
+                actionEditMarker(marker);
+            }
+
+            @Override
+            public void onMarkerDelete(Marker marker) {
+                actionDeleteMarker(marker);
+            }
+        });
+        dialog.show(getSupportFragmentManager(), "MarkerInfoOptionsDialog");
+    }
+
+    private void actionEditMarker(Marker marker) {
+        MarkerDialog markerDialog = new MarkerDialog();
+        markerDialog.setMarker(marker);
+        markerDialog.setMarkerDialogCallback(new MarkerDialog.MarkerDialogCallback() {
+            @Override
+            public void onMarkerDialogSuccess(com.vitaliyhtc.googlemaps1.model.Marker marker) {
+                updateMarkerInRealm(marker);
+                if(mMarkers.containsKey(marker.getId())){
+                    mMarkers.get(marker.getId()).remove();
+                }
+                placeMarkerOnMap(marker);
+            }
+        });
+        markerDialog.show(getSupportFragmentManager(), "MarkerDialog");
+    }
+
+    private void updateMarkerInRealm(final com.vitaliyhtc.googlemaps1.model.Marker marker){
+        if (marker != null) {
+            Realm realm = Realm.getDefaultInstance();
+            realm.executeTransaction(new Realm.Transaction() {
+                @Override
+                public void execute(Realm realm) {
+                    com.vitaliyhtc.googlemaps1.model.Marker marker1 = realm
+                            .where(com.vitaliyhtc.googlemaps1.model.Marker.class)
+                            .equalTo(KEY_MARKER_ID, marker.getId())
+                            .findFirst();
+
+                    marker1.setTitle(marker.getTitle());
+                    marker1.setIconHue(marker.getIconHue());
+                }
+            });
+            realm.close();
+        }
+    }
+
+    private void actionDeleteMarker(final Marker marker) {
+        Realm realm = Realm.getDefaultInstance();
+        realm.executeTransaction(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                com.vitaliyhtc.googlemaps1.model.Marker marker1 = realm
+                        .where(com.vitaliyhtc.googlemaps1.model.Marker.class)
+                        .equalTo(KEY_MARKER_ID, (String) marker.getTag())
+                        .findFirst();
+                marker1.deleteFromRealm();
+            }
+        });
+        realm.close();
+        mMarkers.remove((String) marker.getTag());
+        marker.remove();
     }
 
     private void restoreMarkerOnMap() {
-        // TODO: 3. on app start restore all markers.
+        Realm realm = Realm.getDefaultInstance();
+        realm.executeTransaction(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                RealmResults<com.vitaliyhtc.googlemaps1.model.Marker> markers =
+                        realm.where(com.vitaliyhtc.googlemaps1.model.Marker.class).findAll();
+                for (com.vitaliyhtc.googlemaps1.model.Marker marker : markers) {
+                    placeMarkerOnMap(marker);
+                }
+            }
+        });
+        realm.close();
     }
 
     private void saveCameraPosition() {

@@ -1,12 +1,25 @@
 package com.vitaliyhtc.googlemaps1.model;
 
-public class Marker {
+import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
 
+public class Marker extends RealmObject {
+
+    @PrimaryKey
+    private String id;
     private double latitude;
     private double longitude;
     private String title;
     private float iconHue;
 
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public double getLatitude() {
         return latitude;
