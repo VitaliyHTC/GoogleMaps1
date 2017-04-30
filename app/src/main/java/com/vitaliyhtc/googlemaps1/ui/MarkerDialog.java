@@ -1,4 +1,4 @@
-package com.vitaliyhtc.googlemaps1;
+package com.vitaliyhtc.googlemaps1.ui;
 
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -14,6 +14,8 @@ import android.widget.ImageView;
 
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.vitaliyhtc.googlemaps1.R;
+import com.vitaliyhtc.googlemaps1.data.MarkerRealmStorage;
 import com.vitaliyhtc.googlemaps1.model.Marker;
 
 import java.util.ArrayList;
@@ -25,8 +27,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import io.realm.Realm;
-
-import static com.vitaliyhtc.googlemaps1.Config.KEY_MARKER_ID;
 
 public class MarkerDialog extends DialogFragment {
 
@@ -110,19 +110,11 @@ public class MarkerDialog extends DialogFragment {
 
     private void onClickSubmit() {
         if (mMarker != null && mLatLng == null) {
-            Realm realm = Realm.getDefaultInstance();
-            realm.executeTransaction(new Realm.Transaction() {
-                @Override
-                public void execute(Realm realm) {
-                    com.vitaliyhtc.googlemaps1.model.Marker marker = realm
-                            .where(com.vitaliyhtc.googlemaps1.model.Marker.class)
-                            .equalTo(KEY_MARKER_ID, (String) mMarker.getTag())
-                            .findFirst();
-
-                    mLatLng = new LatLng(marker.getLatitude(), marker.getLongitude());
-                }
-            });
-            realm.close();
+            Realm realmInstance = Realm.getDefaultInstance();
+            com.vitaliyhtc.googlemaps1.model.Marker marker =
+                    MarkerRealmStorage.getMarkerById(realmInstance, (String) mMarker.getTag());
+            mLatLng = new LatLng(marker.getLatitude(), marker.getLongitude());
+            realmInstance.close();
         }
         if (mLatLng != null && mMarkerDialogCallback != null) {
             Marker marker = new Marker();
@@ -222,21 +214,13 @@ public class MarkerDialog extends DialogFragment {
 
     private void fillDataFromMarker(final com.google.android.gms.maps.model.Marker marker) {
         if (marker != null) {
-            Realm realm = Realm.getDefaultInstance();
-            realm.executeTransaction(new Realm.Transaction() {
-                @Override
-                public void execute(Realm realm) {
-                    com.vitaliyhtc.googlemaps1.model.Marker marker1 = realm
-                            .where(com.vitaliyhtc.googlemaps1.model.Marker.class)
-                            .equalTo(KEY_MARKER_ID, (String) marker.getTag())
-                            .findFirst();
-
-                    mEditTextTitle.setText(marker1.getTitle());
-                    mSelectedMarkerHue = marker1.getIconHue();
-                    setSelectedImageViewFromHue(mSelectedMarkerHue);
-                }
-            });
-            realm.close();
+            Realm realmInstance = Realm.getDefaultInstance();
+            com.vitaliyhtc.googlemaps1.model.Marker marker1 =
+                    MarkerRealmStorage.getMarkerById(realmInstance, (String) marker.getTag());
+            mEditTextTitle.setText(marker1.getTitle());
+            mSelectedMarkerHue = marker1.getIconHue();
+            realmInstance.close();
+            setSelectedImageViewFromHue(mSelectedMarkerHue);
         }
     }
 

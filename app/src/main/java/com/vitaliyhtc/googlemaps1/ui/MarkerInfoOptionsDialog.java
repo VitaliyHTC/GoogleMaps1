@@ -1,4 +1,4 @@
-package com.vitaliyhtc.googlemaps1;
+package com.vitaliyhtc.googlemaps1.ui;
 
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -11,12 +11,12 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.google.android.gms.maps.model.Marker;
+import com.vitaliyhtc.googlemaps1.R;
+import com.vitaliyhtc.googlemaps1.data.MarkerRealmStorage;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.realm.Realm;
-
-import static com.vitaliyhtc.googlemaps1.Config.KEY_MARKER_ID;
 
 public class MarkerInfoOptionsDialog extends DialogFragment {
 
@@ -80,19 +80,11 @@ public class MarkerInfoOptionsDialog extends DialogFragment {
 
     private void showMarkerInfo() {
         if (mMarker != null) {
-            Realm realm = Realm.getDefaultInstance();
-            realm.executeTransaction(new Realm.Transaction() {
-                @Override
-                public void execute(Realm realm) {
-                    com.vitaliyhtc.googlemaps1.model.Marker marker = realm
-                            .where(com.vitaliyhtc.googlemaps1.model.Marker.class)
-                            .equalTo(KEY_MARKER_ID, (String) mMarker.getTag())
-                            .findFirst();
-
-                    mTitleTextView.setText(marker.getTitle());
-                }
-            });
-            realm.close();
+            Realm realmInstance = Realm.getDefaultInstance();
+            com.vitaliyhtc.googlemaps1.model.Marker marker =
+                    MarkerRealmStorage.getMarkerById(realmInstance, (String) mMarker.getTag());
+            mTitleTextView.setText(marker.getTitle());
+            realmInstance.close();
         }
     }
 
