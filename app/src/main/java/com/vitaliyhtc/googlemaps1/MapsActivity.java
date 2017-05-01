@@ -28,9 +28,7 @@ import java.util.Map;
 import io.realm.Realm;
 
 public class MapsActivity extends AppCompatActivity
-        implements OnMapReadyCallback,
-        GoogleMap.OnMyLocationButtonClickListener,
-        ActivityCompat.OnRequestPermissionsResultCallback {
+        implements OnMapReadyCallback, ActivityCompat.OnRequestPermissionsResultCallback {
 
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     private boolean mPermissionDenied = false;
@@ -69,14 +67,6 @@ public class MapsActivity extends AppCompatActivity
     }
 
     @Override
-    public boolean onMyLocationButtonClick() {
-        Toast.makeText(this, R.string.map_ui_my_location_button_click_toast_message, Toast.LENGTH_SHORT).show();
-        // Return false so that we don't consume the event and the default behavior still occurs
-        // (the camera animates to the user's current position).
-        return false;
-    }
-
-    @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
         if (requestCode != LOCATION_PERMISSION_REQUEST_CODE) {
@@ -111,7 +101,15 @@ public class MapsActivity extends AppCompatActivity
     private void initUiSettings() {
         mMap.getUiSettings().setZoomControlsEnabled(true);
         mMap.getUiSettings().setCompassEnabled(true);
-        mMap.setOnMyLocationButtonClickListener(this);
+        mMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
+            @Override
+            public boolean onMyLocationButtonClick() {
+                Toast.makeText(MapsActivity.this, R.string.map_ui_my_location_button_click_toast_message, Toast.LENGTH_SHORT).show();
+                // Return false so that we don't consume the event and the default behavior still occurs
+                // (the camera animates to the user's current position).
+                return false;
+            }
+        });
     }
 
     private void enableMyLocation() {
