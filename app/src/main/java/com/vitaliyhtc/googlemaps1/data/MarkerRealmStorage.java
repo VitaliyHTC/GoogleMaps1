@@ -11,6 +11,7 @@ import io.realm.Realm;
 import static com.vitaliyhtc.googlemaps1.Config.KEY_MARKER_ID;
 
 // write operation need to be moved to realm.executeTransactionAsync() ???
+// TODO: 03/05/17 create interface to work with model and implement this interface
 public abstract class MarkerRealmStorage {
 
     private MarkerRealmStorage() {

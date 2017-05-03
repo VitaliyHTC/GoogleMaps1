@@ -33,6 +33,7 @@ public class MarkerDialog extends DialogFragment {
     @BindView(R.id.et_title)
     EditText mEditTextTitle;
 
+    // TODO: 03/05/17 recycler view with marker styles
     @BindView(R.id.iv_marker_red)
     ImageView mMarkerRed;
     @BindView(R.id.iv_marker_orange)
@@ -108,6 +109,7 @@ public class MarkerDialog extends DialogFragment {
         return builder.create();
     }
 
+    // TODO: 03/05/17 no data change here, send only selected option to caller fragment/activity
     private void onClickSubmit() {
         if (mMarker != null && mLatLng == null) {
             Realm realmInstance = Realm.getDefaultInstance();

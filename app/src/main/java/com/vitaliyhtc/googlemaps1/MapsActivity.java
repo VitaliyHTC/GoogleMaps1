@@ -27,6 +27,9 @@ import java.util.Map;
 
 import io.realm.Realm;
 
+// TODO: 03/05/17 mvp missing
+// TODO: 03/05/17 ViewPager with 2 tabs. 1-st to show all markers on map, 2-st to show all markers in list
+// TODO: 03/05/17 options to switch between map styles (satalite, terrain, mixed, custom)
 public class MapsActivity extends AppCompatActivity
         implements OnMapReadyCallback, ActivityCompat.OnRequestPermissionsResultCallback {
 
@@ -204,6 +207,8 @@ public class MapsActivity extends AppCompatActivity
 
     private void restoreMarkersOnMap() {
         Realm realmInstance = Realm.getDefaultInstance();
+        // TODO: 03/05/17 marker request async
+        // TODO: 03/05/17 clean up(rename marker model
         for (com.vitaliyhtc.googlemaps1.model.Marker marker : MarkerRealmStorage.getAllMarkers(realmInstance)) {
             placeMarkerOnMap(marker);
         }
