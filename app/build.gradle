@@ -6,7 +6,7 @@ android {
         config {
             keyAlias 'boostandroidapps'
             keyPassword 'boost***'
-            storeFile file('/home/vitaliyhtc/Стільниця/AndroidStudioProjects/GoogleMaps1/appBoostAndroidAppKey.jks')
+            storeFile file('BoostAndroidAppKey.jks')
             storePassword 'boost***'
         }
     }
@@ -21,6 +21,10 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
+        debug {
+            signingConfig signingConfigs.config
+            debuggable true
+        }
         release {
             signingConfig signingConfigs.config
             minifyEnabled false
