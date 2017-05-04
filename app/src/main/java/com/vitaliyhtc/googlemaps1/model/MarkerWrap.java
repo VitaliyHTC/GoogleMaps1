@@ -1,20 +1,20 @@
 package com.vitaliyhtc.googlemaps1.model;
 
 public class MarkerWrap {
-    private Marker mMarker;
+    private MarkerInfo mMarkerInfo;
 
     public MarkerWrap() {
     }
 
-    public MarkerWrap(Marker marker) {
-        mMarker = marker;
+    public MarkerWrap(MarkerInfo markerInfo) {
+        mMarkerInfo = markerInfo;
     }
 
-    public Marker getMarker() {
-        return mMarker;
+    public MarkerInfo getMarkerInfo() {
+        return mMarkerInfo;
     }
 
-    public void setMarker(Marker marker) {
-        mMarker = marker;
+    public void setMarkerInfo(MarkerInfo markerInfo) {
+        mMarkerInfo = markerInfo;
     }
 }

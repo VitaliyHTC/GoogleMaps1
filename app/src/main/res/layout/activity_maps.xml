@@ -14,4 +14,16 @@
               tools:context="com.vitaliyhtc.googlemaps1.MapsActivity"
         />
 
+    <ImageView
+        android:id="@+id/iv_map_type_switch"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="24dp"
+        android:layout_alignParentBottom="true"
+        android:src="@drawable/ic_layers_white_48dp"
+        android:contentDescription="@string/control_change_map_type"
+        />
+
 </RelativeLayout>

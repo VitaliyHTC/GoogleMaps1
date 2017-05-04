@@ -12,7 +12,9 @@ import android.widget.TextView;
 
 import com.google.android.gms.maps.model.Marker;
 import com.vitaliyhtc.googlemaps1.R;
-import com.vitaliyhtc.googlemaps1.data.MarkerRealmStorage;
+import com.vitaliyhtc.googlemaps1.data.MarkerInfoRealmStorage;
+import com.vitaliyhtc.googlemaps1.data.MarkerInfoRealmStorageImpl;
+import com.vitaliyhtc.googlemaps1.model.MarkerInfo;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -25,6 +27,7 @@ public class MarkerInfoOptionsDialog extends DialogFragment {
 
     private Marker mMarker;
     private MarkerInfoOptionsDialogCallback callback;
+    private MarkerInfoRealmStorage mMarkerInfoRealmStorage = new MarkerInfoRealmStorageImpl();
 
     @NonNull
     @Override
@@ -81,9 +84,9 @@ public class MarkerInfoOptionsDialog extends DialogFragment {
     private void showMarkerInfo() {
         if (mMarker != null) {
             Realm realmInstance = Realm.getDefaultInstance();
-            com.vitaliyhtc.googlemaps1.model.Marker marker =
-                    MarkerRealmStorage.getMarkerById(realmInstance, (String) mMarker.getTag());
-            mTitleTextView.setText(marker.getTitle());
+            MarkerInfo markerInfo =
+                    mMarkerInfoRealmStorage.getMarkerById(realmInstance, (String) mMarker.getTag());
+            mTitleTextView.setText(markerInfo.getTitle());
             realmInstance.close();
         }
     }

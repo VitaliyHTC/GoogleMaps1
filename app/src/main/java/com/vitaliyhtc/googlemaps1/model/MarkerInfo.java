@@ -3,7 +3,7 @@ package com.vitaliyhtc.googlemaps1.model;
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 
-public class Marker extends RealmObject {
+public class MarkerInfo extends RealmObject {
 
     @PrimaryKey
     private String id;

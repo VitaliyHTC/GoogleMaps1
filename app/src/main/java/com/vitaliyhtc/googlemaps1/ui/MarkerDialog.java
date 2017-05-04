@@ -2,77 +2,55 @@ package com.vitaliyhtc.googlemaps1.ui;
 
 import android.app.Dialog;
 import android.content.DialogInterface;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.ImageView;
 
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.vitaliyhtc.googlemaps1.R;
-import com.vitaliyhtc.googlemaps1.data.MarkerRealmStorage;
-import com.vitaliyhtc.googlemaps1.model.Marker;
+import com.vitaliyhtc.googlemaps1.adapter.MarkerItemsAdapter;
+import com.vitaliyhtc.googlemaps1.model.MarkerColorItem;
+import com.vitaliyhtc.googlemaps1.model.MarkerInfo;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
-import io.realm.Realm;
 
 public class MarkerDialog extends DialogFragment {
 
     @BindView(R.id.et_title)
     EditText mEditTextTitle;
+    @BindView(R.id.recycler_view)
+    RecyclerView mRecyclerView;
 
-    // TODO: 03/05/17 recycler view with marker styles
-    @BindView(R.id.iv_marker_red)
-    ImageView mMarkerRed;
-    @BindView(R.id.iv_marker_orange)
-    ImageView mMarkerOrange;
-    @BindView(R.id.iv_marker_yellow)
-    ImageView mMarkerYellow;
-    @BindView(R.id.iv_marker_green)
-    ImageView mMarkerGreen;
-    @BindView(R.id.iv_marker_cyan)
-    ImageView mMarkerCyan;
-    @BindView(R.id.iv_marker_azure)
-    ImageView mMarkerAzure;
-    @BindView(R.id.iv_marker_blue)
-    ImageView mMarkerBlue;
-    @BindView(R.id.iv_marker_violet)
-    ImageView mMarkerViolet;
-    @BindView(R.id.iv_marker_magenta)
-    ImageView mMarkerMagenta;
-    @BindView(R.id.iv_marker_rose)
-    ImageView mMarkerRose;
-
-    List<ImageView> mMarkers;
-    private ImageView mSelectedImageView;
     private LatLng mLatLng;
     private float mSelectedMarkerHue;
     private MarkerDialogCallback mMarkerDialogCallback;
 
-    private com.google.android.gms.maps.model.Marker mMarker;
+    private MarkerInfo mMarkerInfo;
+
+    private List<MarkerColorItem> mMarkerColorItems;
+
 
     public void setLatLng(LatLng latLng) {
         mLatLng = latLng;
     }
 
-    public void setMarkerDialogCallback(MarkerDialogCallback markerDialogCallback) {
-        mMarkerDialogCallback = markerDialogCallback;
+    public void setMarkerInfo(MarkerInfo markerInfo) {
+        mMarkerInfo = markerInfo;
     }
 
-    public void setMarker(com.google.android.gms.maps.model.Marker marker) {
-        mMarker = marker;
+    public void setMarkerDialogCallback(MarkerDialogCallback markerDialogCallback) {
+        mMarkerDialogCallback = markerDialogCallback;
     }
 
     @NonNull
@@ -82,16 +60,16 @@ public class MarkerDialog extends DialogFragment {
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View view = inflater.inflate(R.layout.fragment_new_marker_dialog, null);
         ButterKnife.bind(this, view);
-        fillMarkersList();
+        initMarkerColorsRecyclerView();
         builder.setView(view);
         String positiveButtonString;
-        if (mMarker == null) {
+        if (mMarkerInfo == null) {
             builder.setTitle(R.string.new_marker_dialog_title);
             positiveButtonString = getString(R.string.new_marker_dialog_add_marker_button);
         } else {
             builder.setTitle(R.string.edit_marker_dialog_title);
             positiveButtonString = getString(R.string.marker_dialog_save_marker_button);
-            fillDataFromMarker(mMarker);
+            fillDataFromMarker(mMarkerInfo);
         }
         builder.setCancelable(true);
         builder.setPositiveButton(positiveButtonString, new DialogInterface.OnClickListener() {
@@ -103,167 +81,105 @@ public class MarkerDialog extends DialogFragment {
         builder.setNegativeButton(R.string.dialog_cancel_button, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int id) {
-                // Do some action. Nothing. We don't save shoppingCart to DB.
+                // Do some action. Nothing.
             }
         });
         return builder.create();
     }
 
-    // TODO: 03/05/17 no data change here, send only selected option to caller fragment/activity
     private void onClickSubmit() {
-        if (mMarker != null && mLatLng == null) {
-            Realm realmInstance = Realm.getDefaultInstance();
-            com.vitaliyhtc.googlemaps1.model.Marker marker =
-                    MarkerRealmStorage.getMarkerById(realmInstance, (String) mMarker.getTag());
-            mLatLng = new LatLng(marker.getLatitude(), marker.getLongitude());
-            realmInstance.close();
+        MarkerInfo markerInfo = new MarkerInfo();
+        if (mMarkerInfo != null && mLatLng == null) {
+            mLatLng = new LatLng(mMarkerInfo.getLatitude(), mMarkerInfo.getLongitude());
+            markerInfo.setId(mMarkerInfo.getId());
         }
         if (mLatLng != null && mMarkerDialogCallback != null) {
-            Marker marker = new Marker();
-            if (mMarker != null) {
-                marker.setId((String) mMarker.getTag());
-            } else {
-                marker.setId(UUID.randomUUID().toString());
+            markerInfo.setTitle(mEditTextTitle.getText().toString());
+            markerInfo.setLatitude(mLatLng.latitude);
+            markerInfo.setLongitude(mLatLng.longitude);
+            markerInfo.setIconHue(mSelectedMarkerHue);
+
+            mMarkerDialogCallback.onMarkerDialogSuccess(markerInfo);
+        }
+    }
+
+    private void initMarkerColorsRecyclerView() {
+        initMarkerColorsList();
+        MarkerItemsAdapter adapter = new MarkerItemsAdapter(new MarkerItemsAdapter.ClickListener() {
+            @Override
+            public void onItemClick(int position) {
+                mSelectedMarkerHue = mMarkerColorItems.get(position).getMarkerHue();
             }
-            marker.setTitle(mEditTextTitle.getText().toString());
-            marker.setLatitude(mLatLng.latitude);
-            marker.setLongitude(mLatLng.longitude);
-            marker.setIconHue(mSelectedMarkerHue);
-
-            mMarkerDialogCallback.onMarkerDialogSuccess(marker);
-        }
+        });
+        adapter.setMarkerColorItems(mMarkerColorItems);
+        mRecyclerView.setAdapter(adapter);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
+        mRecyclerView.setLayoutManager(linearLayoutManager);
     }
 
-    @OnClick({
-            R.id.iv_marker_red,
-            R.id.iv_marker_orange,
-            R.id.iv_marker_yellow,
-            R.id.iv_marker_green,
-            R.id.iv_marker_cyan,
-            R.id.iv_marker_azure,
-            R.id.iv_marker_blue,
-            R.id.iv_marker_violet,
-            R.id.iv_marker_magenta,
-            R.id.iv_marker_rose
-    })
-    protected void onMarkerColorSelectClick(ImageView markerColor) {
-        switch (markerColor.getId()) {
-            case R.id.iv_marker_red:
-                mSelectedMarkerHue = BitmapDescriptorFactory.HUE_RED;
-                mSelectedImageView = mMarkerRed;
-                break;
-            case R.id.iv_marker_orange:
-                mSelectedMarkerHue = BitmapDescriptorFactory.HUE_ORANGE;
-                mSelectedImageView = mMarkerOrange;
-                break;
-            case R.id.iv_marker_yellow:
-                mSelectedMarkerHue = BitmapDescriptorFactory.HUE_YELLOW;
-                mSelectedImageView = mMarkerYellow;
-                break;
-            case R.id.iv_marker_green:
-                mSelectedMarkerHue = BitmapDescriptorFactory.HUE_GREEN;
-                mSelectedImageView = mMarkerGreen;
-                break;
-            case R.id.iv_marker_cyan:
-                mSelectedMarkerHue = BitmapDescriptorFactory.HUE_CYAN;
-                mSelectedImageView = mMarkerCyan;
-                break;
-            case R.id.iv_marker_azure:
-                mSelectedMarkerHue = BitmapDescriptorFactory.HUE_AZURE;
-                mSelectedImageView = mMarkerAzure;
-                break;
-            case R.id.iv_marker_blue:
-                mSelectedMarkerHue = BitmapDescriptorFactory.HUE_BLUE;
-                mSelectedImageView = mMarkerBlue;
-                break;
-            case R.id.iv_marker_violet:
-                mSelectedMarkerHue = BitmapDescriptorFactory.HUE_VIOLET;
-                mSelectedImageView = mMarkerViolet;
-                break;
-            case R.id.iv_marker_magenta:
-                mSelectedMarkerHue = BitmapDescriptorFactory.HUE_MAGENTA;
-                mSelectedImageView = mMarkerMagenta;
-                break;
-            case R.id.iv_marker_rose:
-                mSelectedMarkerHue = BitmapDescriptorFactory.HUE_ROSE;
-                mSelectedImageView = mMarkerRose;
-                break;
-            default:
-                mSelectedMarkerHue = BitmapDescriptorFactory.HUE_RED;
-                mSelectedImageView = mMarkerRed;
-                break;
-        }
-        updateSelectedMarkerUi();
+    private void initMarkerColorsList() {
+        mMarkerColorItems = new ArrayList<>();
+        mMarkerColorItems.add(new MarkerColorItem(
+                R.drawable.ic_place_red_48dp,
+                getString(R.string.new_marker_dialog_red_color_marker),
+                BitmapDescriptorFactory.HUE_RED
+        ));
+        mMarkerColorItems.add(new MarkerColorItem(
+                R.drawable.ic_place_orange_48dp,
+                getString(R.string.new_marker_dialog_orange_color_marker),
+                BitmapDescriptorFactory.HUE_ORANGE
+        ));
+        mMarkerColorItems.add(new MarkerColorItem(
+                R.drawable.ic_place_yellow_48dp,
+                getString(R.string.new_marker_dialog_yellow_color_marker),
+                BitmapDescriptorFactory.HUE_YELLOW
+        ));
+        mMarkerColorItems.add(new MarkerColorItem(
+                R.drawable.ic_place_green_48dp,
+                getString(R.string.new_marker_dialog_green_color_marker),
+                BitmapDescriptorFactory.HUE_GREEN
+        ));
+        mMarkerColorItems.add(new MarkerColorItem(
+                R.drawable.ic_place_cyan_48dp,
+                getString(R.string.new_marker_dialog_cyan_color_marker),
+                BitmapDescriptorFactory.HUE_CYAN
+        ));
+        mMarkerColorItems.add(new MarkerColorItem(
+                R.drawable.ic_place_azure_48dp,
+                getString(R.string.new_marker_dialog_azure_color_marker),
+                BitmapDescriptorFactory.HUE_AZURE
+        ));
+        mMarkerColorItems.add(new MarkerColorItem(
+                R.drawable.ic_place_blue_48dp,
+                getString(R.string.new_marker_dialog_blue_color_marker),
+                BitmapDescriptorFactory.HUE_BLUE
+        ));
+        mMarkerColorItems.add(new MarkerColorItem(
+                R.drawable.ic_place_violet_48dp,
+                getString(R.string.new_marker_dialog_violet_color_marker),
+                BitmapDescriptorFactory.HUE_VIOLET
+        ));
+        mMarkerColorItems.add(new MarkerColorItem(
+                R.drawable.ic_place_magenta_48dp,
+                getString(R.string.new_marker_dialog_magenta_color_marker),
+                BitmapDescriptorFactory.HUE_MAGENTA
+        ));
+        mMarkerColorItems.add(new MarkerColorItem(
+                R.drawable.ic_place_rose_48dp,
+                getString(R.string.new_marker_dialog_rose_color_marker),
+                BitmapDescriptorFactory.HUE_ROSE
+        ));
     }
 
-    private void fillMarkersList() {
-        mMarkers = new ArrayList<>();
-        ImageView[] markers = {
-                mMarkerRed,
-                mMarkerOrange,
-                mMarkerYellow,
-                mMarkerGreen,
-                mMarkerCyan,
-                mMarkerAzure,
-                mMarkerBlue,
-                mMarkerViolet,
-                mMarkerMagenta,
-                mMarkerRose
-        };
-        mMarkers.addAll(Arrays.asList(markers));
-        mSelectedImageView = mMarkerRed;
-    }
 
-    private void fillDataFromMarker(final com.google.android.gms.maps.model.Marker marker) {
-        if (marker != null) {
-            Realm realmInstance = Realm.getDefaultInstance();
-            com.vitaliyhtc.googlemaps1.model.Marker marker1 =
-                    MarkerRealmStorage.getMarkerById(realmInstance, (String) marker.getTag());
-            mEditTextTitle.setText(marker1.getTitle());
-            mSelectedMarkerHue = marker1.getIconHue();
-            realmInstance.close();
-            setSelectedImageViewFromHue(mSelectedMarkerHue);
-        }
-    }
-
-    private void setSelectedImageViewFromHue(float hue) {
-        if (hue == BitmapDescriptorFactory.HUE_RED) {
-            mSelectedImageView = mMarkerRed;
-        } else if (hue == BitmapDescriptorFactory.HUE_ORANGE) {
-            mSelectedImageView = mMarkerOrange;
-        } else if (hue == BitmapDescriptorFactory.HUE_YELLOW) {
-            mSelectedImageView = mMarkerYellow;
-        } else if (hue == BitmapDescriptorFactory.HUE_GREEN) {
-            mSelectedImageView = mMarkerGreen;
-        } else if (hue == BitmapDescriptorFactory.HUE_CYAN) {
-            mSelectedImageView = mMarkerCyan;
-        } else if (hue == BitmapDescriptorFactory.HUE_AZURE) {
-            mSelectedImageView = mMarkerAzure;
-        } else if (hue == BitmapDescriptorFactory.HUE_BLUE) {
-            mSelectedImageView = mMarkerBlue;
-        } else if (hue == BitmapDescriptorFactory.HUE_VIOLET) {
-            mSelectedImageView = mMarkerViolet;
-        } else if (hue == BitmapDescriptorFactory.HUE_MAGENTA) {
-            mSelectedImageView = mMarkerMagenta;
-        } else if (hue == BitmapDescriptorFactory.HUE_ROSE) {
-            mSelectedImageView = mMarkerRose;
-        } else {
-            mSelectedImageView = mMarkerRed;
-        }
-        updateSelectedMarkerUi();
-    }
-
-    private void updateSelectedMarkerUi() {
-        for (ImageView markerImageView : mMarkers) {
-            if (markerImageView.equals(mSelectedImageView)) {
-                markerImageView.setBackgroundColor(Color.LTGRAY);
-            } else {
-                markerImageView.setBackgroundColor(Color.TRANSPARENT);
-            }
+    private void fillDataFromMarker(final MarkerInfo markerInfo) {
+        if (markerInfo != null) {
+            mEditTextTitle.setText(markerInfo.getTitle());
+            mSelectedMarkerHue = markerInfo.getIconHue();
         }
     }
 
     public interface MarkerDialogCallback {
-        void onMarkerDialogSuccess(Marker marker);
+        void onMarkerDialogSuccess(MarkerInfo markerInfo);
     }
 }

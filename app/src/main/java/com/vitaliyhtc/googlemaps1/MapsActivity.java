@@ -16,20 +16,30 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.vitaliyhtc.googlemaps1.data.CameraPositionUtils;
-import com.vitaliyhtc.googlemaps1.data.MarkerRealmStorage;
+import com.vitaliyhtc.googlemaps1.data.MapStateUtils;
+import com.vitaliyhtc.googlemaps1.data.MarkerInfoRealmStorage;
+import com.vitaliyhtc.googlemaps1.data.MarkerInfoRealmStorageImpl;
+import com.vitaliyhtc.googlemaps1.model.MarkerInfo;
+import com.vitaliyhtc.googlemaps1.ui.MapTypeDialog;
 import com.vitaliyhtc.googlemaps1.ui.MarkerDialog;
 import com.vitaliyhtc.googlemaps1.ui.MarkerInfoOptionsDialog;
 import com.vitaliyhtc.googlemaps1.util.PermissionUtils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 import io.realm.Realm;
 
 // TODO: 03/05/17 mvp missing
 // TODO: 03/05/17 ViewPager with 2 tabs. 1-st to show all markers on map, 2-st to show all markers in list
-// TODO: 03/05/17 options to switch between map styles (satalite, terrain, mixed, custom)
+
+// 03/05/17 options to switch between map styles (satalite, terrain, mixed, custom)
+// Ooops. MapType selection done. For mapStyles i can use this example:
+// https://github.com/googlemaps/android-samples/blob/master/ApiDemos/app/src/main/java/com/example/mapdemo/StyledMapDemoActivity.java
+// https://developers.google.com/maps/documentation/android-api/styling
 public class MapsActivity extends AppCompatActivity
         implements OnMapReadyCallback, ActivityCompat.OnRequestPermissionsResultCallback {
 
@@ -40,10 +50,14 @@ public class MapsActivity extends AppCompatActivity
 
     private Map<String, Marker> mMarkers;
 
+    private MarkerInfoRealmStorage mMarkerInfoRealmStorage;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+        ButterKnife.bind(this);
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -53,7 +67,8 @@ public class MapsActivity extends AppCompatActivity
     @Override
     protected void onStop() {
         super.onStop();
-        CameraPositionUtils.saveCameraPositionFromMap(MapsActivity.this, mMap);
+        MapStateUtils.saveCameraPositionFromMap(MapsActivity.this, mMap);
+        MapStateUtils.saveMapType(MapsActivity.this, mMap);
     }
 
     @Override
@@ -62,8 +77,10 @@ public class MapsActivity extends AppCompatActivity
 
         // Do other work here
         mMarkers = new HashMap<>();
+        mMarkerInfoRealmStorage = new MarkerInfoRealmStorageImpl();
         initUiSettings();
-        CameraPositionUtils.restoreCameraPositionOnMap(MapsActivity.this, mMap);
+        MapStateUtils.restoreCameraPositionOnMap(MapsActivity.this, mMap);
+        MapStateUtils.restoreMapType(MapsActivity.this, mMap);
         enableMyLocation();
         initListeners();
         restoreMarkersOnMap();
@@ -93,6 +110,19 @@ public class MapsActivity extends AppCompatActivity
             showMissingPermissionError();
             mPermissionDenied = false;
         }
+    }
+
+    @OnClick(R.id.iv_map_type_switch)
+    protected void onMapTypeSwitchClick() {
+        MapTypeDialog mapTypeDialog = new MapTypeDialog();
+        mapTypeDialog.setSelectedMapType(mMap.getMapType());
+        mapTypeDialog.setMapTypeSelectedListener(new MapTypeDialog.MapTypeSelectedListener() {
+            @Override
+            public void onMapTypeSelected(int mapType) {
+                mMap.setMapType(mapType);
+            }
+        });
+        mapTypeDialog.show(getSupportFragmentManager(), "MapTypeDialog");
     }
 
     private void showMissingPermissionError() {
@@ -148,22 +178,25 @@ public class MapsActivity extends AppCompatActivity
         markerDialog.setLatLng(latLng);
         markerDialog.setMarkerDialogCallback(new MarkerDialog.MarkerDialogCallback() {
             @Override
-            public void onMarkerDialogSuccess(com.vitaliyhtc.googlemaps1.model.Marker marker) {
-                MarkerRealmStorage.saveMarker(marker);
-                placeMarkerOnMap(marker);
+            public void onMarkerDialogSuccess(MarkerInfo markerInfo) {
+                if (markerInfo.getId() == null) {
+                    markerInfo.setId(UUID.randomUUID().toString());
+                }
+                mMarkerInfoRealmStorage.saveMarker(markerInfo);
+                placeMarkerOnMap(markerInfo);
             }
         });
         markerDialog.show(getSupportFragmentManager(), "MarkerDialog");
     }
 
-    private void placeMarkerOnMap(com.vitaliyhtc.googlemaps1.model.Marker marker) {
+    private void placeMarkerOnMap(MarkerInfo markerInfo) {
         MarkerOptions markerOptions = new MarkerOptions()
-                .position(new LatLng(marker.getLatitude(), marker.getLongitude()))
-                .title(marker.getTitle())
-                .icon(BitmapDescriptorFactory.defaultMarker(marker.getIconHue()));
+                .position(new LatLng(markerInfo.getLatitude(), markerInfo.getLongitude()))
+                .title(markerInfo.getTitle())
+                .icon(BitmapDescriptorFactory.defaultMarker(markerInfo.getIconHue()));
         Marker marker1 = mMap.addMarker(markerOptions);
-        marker1.setTag(marker.getId());
-        mMarkers.put(marker.getId(), marker1);
+        marker1.setTag(markerInfo.getId());
+        mMarkers.put(markerInfo.getId(), marker1);
     }
 
     private void actionOnMarkerClick(Marker marker) {
@@ -185,31 +218,41 @@ public class MapsActivity extends AppCompatActivity
 
     private void actionEditMarker(Marker marker) {
         MarkerDialog markerDialog = new MarkerDialog();
-        markerDialog.setMarker(marker);
+
+        Realm realmInstance = Realm.getDefaultInstance();
+        MarkerInfo markerInfo = new MarkerInfo();
+        MarkerInfo markerInfo1 = mMarkerInfoRealmStorage.getMarkerById(realmInstance, (String) marker.getTag());
+        markerInfo.setId(markerInfo1.getId());
+        markerInfo.setTitle(markerInfo1.getTitle());
+        markerInfo.setLatitude(markerInfo1.getLatitude());
+        markerInfo.setLongitude(markerInfo1.getLongitude());
+        markerInfo.setIconHue(markerInfo1.getIconHue());
+        realmInstance.close();
+
+        markerDialog.setMarkerInfo(markerInfo);
         markerDialog.setMarkerDialogCallback(new MarkerDialog.MarkerDialogCallback() {
             @Override
-            public void onMarkerDialogSuccess(com.vitaliyhtc.googlemaps1.model.Marker marker) {
-                MarkerRealmStorage.updateMarker(marker);
-                if (mMarkers.containsKey(marker.getId())) {
-                    mMarkers.get(marker.getId()).remove();
+            public void onMarkerDialogSuccess(MarkerInfo markerInfo) {
+                mMarkerInfoRealmStorage.updateMarker(markerInfo);
+                if (mMarkers.containsKey(markerInfo.getId())) {
+                    mMarkers.get(markerInfo.getId()).remove();
                 }
-                placeMarkerOnMap(marker);
+                placeMarkerOnMap(markerInfo);
             }
         });
         markerDialog.show(getSupportFragmentManager(), "MarkerDialog");
     }
 
     private void actionDeleteMarker(final Marker marker) {
-        MarkerRealmStorage.deleteMarkerById((String) marker.getTag());
+        mMarkerInfoRealmStorage.deleteMarkerById((String) marker.getTag());
         mMarkers.remove(marker.getTag());
         marker.remove();
     }
 
     private void restoreMarkersOnMap() {
-        Realm realmInstance = Realm.getDefaultInstance();
         // TODO: 03/05/17 marker request async
-        // TODO: 03/05/17 clean up(rename marker model
-        for (com.vitaliyhtc.googlemaps1.model.Marker marker : MarkerRealmStorage.getAllMarkers(realmInstance)) {
+        Realm realmInstance = Realm.getDefaultInstance();
+        for (MarkerInfo marker : mMarkerInfoRealmStorage.getAllMarkers(realmInstance)) {
             placeMarkerOnMap(marker);
         }
         realmInstance.close();
