@@ -12,7 +12,6 @@ import io.realm.RealmResults;
 
 import static com.vitaliyhtc.googlemaps1.Config.KEY_MARKER_ID;
 
-// write operation need to be moved to realm.executeTransactionAsync() ???
 public class MarkerInfoRealmStorageImpl implements MarkerInfoRealmStorage {
 
     private RealmResults<MarkerInfo> mAllMarkersResult;
@@ -27,21 +26,18 @@ public class MarkerInfoRealmStorageImpl implements MarkerInfoRealmStorage {
         }
     }
 
-    public void saveMarker(final MarkerInfo markerInfo) {
-        final Realm realm = Realm.getDefaultInstance();
-        realm.executeTransaction(new Realm.Transaction() {
+    public void saveMarker(Realm realmInstance, final MarkerInfo markerInfo) {
+        realmInstance.executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm bgRealm) {
-                realm.copyToRealm(markerInfo);
+                bgRealm.copyToRealm(markerInfo);
             }
         });
-        realm.close();
     }
 
-    public void updateMarker(final MarkerInfo markerInfo) {
+    public void updateMarker(Realm realmInstance, final MarkerInfo markerInfo) {
         if (markerInfo != null) {
-            Realm realm = Realm.getDefaultInstance();
-            realm.executeTransaction(new Realm.Transaction() {
+            realmInstance.executeTransactionAsync(new Realm.Transaction() {
                 @Override
                 public void execute(Realm realm) {
                     MarkerInfo markerInfo1 = realm
@@ -56,32 +52,33 @@ public class MarkerInfoRealmStorageImpl implements MarkerInfoRealmStorage {
 
                 }
             });
-            realm.close();
         }
     }
 
-    /**
-     * @param realmInstance must be closed after after marker usage to release resources.
-     * @param markerId      id to retrieve MarkerInfo instance from Realm db.
-     * @return instance of MarkerInfo corresponding to given id.
-     */
-    public MarkerInfo getMarkerById(Realm realmInstance, final String markerId) {
+    public void getMarkerById(Realm realmInstance, final String markerId, final MarkerRetrievedListener listener) {
         final MarkerWrap markerWrap = new MarkerWrap();
-        realmInstance.executeTransaction(new Realm.Transaction() {
-            @Override
-            public void execute(Realm realm) {
-                markerWrap.setMarkerInfo(realm
-                        .where(MarkerInfo.class)
-                        .equalTo(KEY_MARKER_ID, markerId)
-                        .findFirst()
-                );
-            }
-        });
-        return markerWrap.getMarkerInfo();
+        realmInstance.executeTransactionAsync(
+                new Realm.Transaction() {
+                    @Override
+                    public void execute(Realm realm) {
+                        MarkerInfo markerInfo = realm
+                                .where(MarkerInfo.class)
+                                .equalTo(KEY_MARKER_ID, markerId)
+                                .findFirst();
+                        markerWrap.setMarkerInfo(MarkerInfo.clone(markerInfo));
+                    }
+                },
+                new Realm.Transaction.OnSuccess() {
+                    @Override
+                    public void onSuccess() {
+                        listener.onMarkerRetrieved(markerWrap.getMarkerInfo());
+                    }
+                }
+        );
     }
 
     public void deleteMarkerById(Realm realm, final String markerId) {
-        realm.executeTransaction(
+        realm.executeTransactionAsync(
                 new Realm.Transaction() {
                     @Override
                     public void execute(Realm realm) {
@@ -104,6 +101,10 @@ public class MarkerInfoRealmStorageImpl implements MarkerInfoRealmStorage {
         };
         mAllMarkersResult = realm.where(MarkerInfo.class).findAllAsync();
         mAllMarkersResult.addChangeListener(allMarkersCallback);
+    }
+
+    public interface MarkerRetrievedListener {
+        void onMarkerRetrieved(MarkerInfo markerInfo);
     }
 
     public interface AllMarkersResultListener {

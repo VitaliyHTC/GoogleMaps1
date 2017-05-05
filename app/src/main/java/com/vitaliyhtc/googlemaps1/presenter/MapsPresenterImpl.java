@@ -57,6 +57,7 @@ public class MapsPresenterImpl
         mMapsView = null;
         if (mMarkerInfoRealmStorage != null) {
             mMarkerInfoRealmStorage.onStop();
+            mMarkerInfoRealmStorage = null;
         }
         if (mRealm != null) {
             mRealm.close();
@@ -150,7 +151,7 @@ public class MapsPresenterImpl
                 if (markerInfo.getId() == null) {
                     markerInfo.setId(UUID.randomUUID().toString());
                 }
-                mMarkerInfoRealmStorage.saveMarker(markerInfo);
+                mMarkerInfoRealmStorage.saveMarker(mRealm, markerInfo);
                 // realm fire callback with new set of MarkerInfo objects
             }
         });
@@ -185,23 +186,31 @@ public class MapsPresenterImpl
     }
 
     private void actionEditMarker(Marker marker) {
+        mMarkerInfoRealmStorage.getMarkerById(mRealm, (String) marker.getTag(),
+                new MarkerInfoRealmStorageImpl.MarkerRetrievedListener() {
+                    @Override
+                    public void onMarkerRetrieved(MarkerInfo markerInfo) {
+                        actionEditMarkerRetrieved(markerInfo);
+                    }
+                }
+        );
+    }
+
+    private void actionEditMarkerRetrieved(MarkerInfo markerInfo1) {
         MarkerDialog markerDialog = new MarkerDialog();
 
-        Realm realmInstance = Realm.getDefaultInstance();
         MarkerInfo markerInfo = new MarkerInfo();
-        MarkerInfo markerInfo1 = mMarkerInfoRealmStorage.getMarkerById(realmInstance, (String) marker.getTag());
         markerInfo.setId(markerInfo1.getId());
         markerInfo.setTitle(markerInfo1.getTitle());
         markerInfo.setLatitude(markerInfo1.getLatitude());
         markerInfo.setLongitude(markerInfo1.getLongitude());
         markerInfo.setIconHue(markerInfo1.getIconHue());
-        realmInstance.close();
 
         markerDialog.setMarkerInfo(markerInfo);
         markerDialog.setMarkerDialogCallback(new MarkerDialog.MarkerDialogCallback() {
             @Override
             public void onMarkerDialogSuccess(MarkerInfo markerInfo) {
-                mMarkerInfoRealmStorage.updateMarker(markerInfo);
+                mMarkerInfoRealmStorage.updateMarker(mRealm, markerInfo);
                 // realm fire callback with new set of MarkerInfo objects
             }
         });

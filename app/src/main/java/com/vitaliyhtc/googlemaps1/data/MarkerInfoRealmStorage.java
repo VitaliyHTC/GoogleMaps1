@@ -6,9 +6,9 @@ import io.realm.Realm;
 
 public interface MarkerInfoRealmStorage {
     void onStop();
-    void saveMarker(MarkerInfo markerInfo);
-    void updateMarker(MarkerInfo markerInfo);
-    MarkerInfo getMarkerById(Realm realmInstance, String markerId);
+    void saveMarker(Realm realmInstance, MarkerInfo markerInfo);
+    void updateMarker(Realm realmInstance, MarkerInfo markerInfo);
+    void getMarkerById(Realm realmInstance, String markerId, MarkerInfoRealmStorageImpl.MarkerRetrievedListener listener);
     void deleteMarkerById(Realm realm, String markerId);
     void getAllMarkersAsync(Realm realm, MarkerInfoRealmStorageImpl.AllMarkersResultListener listener);
 }
