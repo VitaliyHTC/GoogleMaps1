@@ -19,6 +19,7 @@ import com.vitaliyhtc.googlemaps1.util.MapStateUtils;
 import com.vitaliyhtc.googlemaps1.view.BaseView;
 import com.vitaliyhtc.googlemaps1.view.MapsView;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,9 +54,6 @@ public class MapsPresenterImpl
 
     @Override
     public void onDetachView() {
-        MapStateUtils.saveCameraPositionFromMap(mFragment.getFragment().getContext(), mMap);
-        MapStateUtils.saveMapType(mFragment.getFragment().getContext(), mMap);
-
         mMapsView = null;
         if (mMarkerInfoRealmStorage != null) {
             mMarkerInfoRealmStorage.onStop();
@@ -71,6 +69,12 @@ public class MapsPresenterImpl
         SupportMapFragment mapFragment = (SupportMapFragment) mFragment.getFragment().getChildFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(MapsPresenterImpl.this);
+    }
+
+    @Override
+    public void onStop() {
+        MapStateUtils.saveCameraPositionFromMap(mFragment.getFragment().getContext(), mMap);
+        MapStateUtils.saveMapType(mFragment.getFragment().getContext(), mMap);
     }
 
     @Override
@@ -90,7 +94,7 @@ public class MapsPresenterImpl
         MapStateUtils.restoreMapType(mFragment.getFragment().getContext(), mMap);
         mMapsView.enableMyLocation();
         initListeners();
-        restoreMarkersOnMap();
+        restoreMarkersOnMapAndListenForChanges();
     }
 
     @Override
@@ -103,7 +107,7 @@ public class MapsPresenterImpl
                 mMap.setMapType(mapType);
             }
         });
-        mapTypeDialog.show(mFragment.getFragment().getActivity().getSupportFragmentManager(), "MapTypeDialog");
+        mapTypeDialog.show(mFragment.getFragment().getChildFragmentManager(), "MapTypeDialog");
     }
 
     private void initUiSettings() {
@@ -147,10 +151,10 @@ public class MapsPresenterImpl
                     markerInfo.setId(UUID.randomUUID().toString());
                 }
                 mMarkerInfoRealmStorage.saveMarker(markerInfo);
-                placeMarkerOnMap(markerInfo);
+                // realm fire callback with new set of MarkerInfo objects
             }
         });
-        markerDialog.show(mFragment.getFragment().getActivity().getSupportFragmentManager(), "MarkerDialog");
+        markerDialog.show(mFragment.getFragment().getChildFragmentManager(), "MarkerDialog");
     }
 
     private void placeMarkerOnMap(MarkerInfo markerInfo) {
@@ -177,7 +181,7 @@ public class MapsPresenterImpl
                 actionDeleteMarker(marker);
             }
         });
-        dialog.show(mFragment.getFragment().getActivity().getSupportFragmentManager(), "MarkerInfoOptionsDialog");
+        dialog.show(mFragment.getFragment().getChildFragmentManager(), "MarkerInfoOptionsDialog");
     }
 
     private void actionEditMarker(Marker marker) {
@@ -198,29 +202,47 @@ public class MapsPresenterImpl
             @Override
             public void onMarkerDialogSuccess(MarkerInfo markerInfo) {
                 mMarkerInfoRealmStorage.updateMarker(markerInfo);
-                if (mMarkers.containsKey(markerInfo.getId())) {
-                    mMarkers.get(markerInfo.getId()).remove();
-                }
-                placeMarkerOnMap(markerInfo);
+                // realm fire callback with new set of MarkerInfo objects
             }
         });
-        markerDialog.show(mFragment.getFragment().getActivity().getSupportFragmentManager(), "MarkerDialog");
+        markerDialog.show(mFragment.getFragment().getChildFragmentManager(), "MarkerDialog");
     }
 
     private void actionDeleteMarker(Marker marker) {
         mMarkerInfoRealmStorage.deleteMarkerById(mRealm, (String) marker.getTag());
-        //mMarkers.get(marker.getTag()).remove();
-        mMarkers.remove(marker.getTag());
-        marker.remove();
+        // realm fire callback with new set of MarkerInfo objects
     }
 
-    private void restoreMarkersOnMap() {
+    // listen for new, edited or deleted markers.
+    private void restoreMarkersOnMapAndListenForChanges() {
         mMarkerInfoRealmStorage.getAllMarkersAsync(mRealm,
                 new MarkerInfoRealmStorageImpl.AllMarkersResultListener() {
                     @Override
                     public void onAllMarkersFinded(List<MarkerInfo> markers) {
-                        for (MarkerInfo marker : markers) {
-                            placeMarkerOnMap(marker);
+                        // verify for new or edited markers
+                        for (MarkerInfo markerInfo : markers) {
+                            if (mMarkers.containsKey(markerInfo.getId())) {
+                                mMarkers.get(markerInfo.getId()).remove();
+                            }
+                            placeMarkerOnMap(markerInfo);
+                        }
+                        // verify for removed markers
+                        boolean isPresent;
+                        List<String> idsForRemoval = new ArrayList<String>();
+                        for (String id : mMarkers.keySet()) {
+                            isPresent = false;
+                            for (MarkerInfo markerInfo : markers) {
+                                if (id.equals(markerInfo.getId())) {
+                                    isPresent = true;
+                                }
+                            }
+                            if (!isPresent) {
+                                idsForRemoval.add(id);
+                            }
+                        }
+                        for (String id : idsForRemoval) {
+                            mMarkers.get(id).remove();
+                            mMarkers.remove(id);
                         }
                     }
                 }

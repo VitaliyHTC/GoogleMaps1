@@ -5,5 +5,4 @@ import com.vitaliyhtc.googlemaps1.view.BaseView;
 public interface BasePresenter {
     void onAttachView(BaseView baseView);
     void onDetachView();
-    void onCreate();
 }

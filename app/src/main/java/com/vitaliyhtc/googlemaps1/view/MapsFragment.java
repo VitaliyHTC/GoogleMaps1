@@ -84,6 +84,12 @@ public class MapsFragment extends Fragment
         }
     }
 
+    @Override
+    public void onStop() {
+        super.onStop();
+        mMapsPresenter.onStop();
+    }
+
     @OnClick(R.id.iv_map_type_switch)
     protected void onMapTypeSwitchClick() {
         mMapsPresenter.onMapTypeSwitchClick();
