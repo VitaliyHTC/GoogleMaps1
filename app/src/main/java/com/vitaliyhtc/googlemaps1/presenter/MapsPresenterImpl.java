@@ -1,13 +1,4 @@
-package com.vitaliyhtc.googlemaps1;
-
-import android.Manifest;
-import android.content.pm.PackageManager;
-import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
-import android.widget.Toast;
+package com.vitaliyhtc.googlemaps1.presenter;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -16,35 +7,29 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.vitaliyhtc.googlemaps1.data.MapStateUtils;
+import com.vitaliyhtc.googlemaps1.R;
 import com.vitaliyhtc.googlemaps1.data.MarkerInfoRealmStorage;
 import com.vitaliyhtc.googlemaps1.data.MarkerInfoRealmStorageImpl;
+import com.vitaliyhtc.googlemaps1.dialog.MapTypeDialog;
+import com.vitaliyhtc.googlemaps1.dialog.MarkerDialog;
+import com.vitaliyhtc.googlemaps1.dialog.MarkerInfoOptionsDialog;
+import com.vitaliyhtc.googlemaps1.model.FragmentWrap;
 import com.vitaliyhtc.googlemaps1.model.MarkerInfo;
-import com.vitaliyhtc.googlemaps1.ui.MapTypeDialog;
-import com.vitaliyhtc.googlemaps1.ui.MarkerDialog;
-import com.vitaliyhtc.googlemaps1.ui.MarkerInfoOptionsDialog;
-import com.vitaliyhtc.googlemaps1.util.PermissionUtils;
+import com.vitaliyhtc.googlemaps1.util.MapStateUtils;
+import com.vitaliyhtc.googlemaps1.view.BaseView;
+import com.vitaliyhtc.googlemaps1.view.MapsView;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import butterknife.ButterKnife;
-import butterknife.OnClick;
 import io.realm.Realm;
 
-// TODO: 03/05/17 mvp missing
-// TODO: 03/05/17 ViewPager with 2 tabs. 1-st to show all markers on map, 2-st to show all markers in list
+public class MapsPresenterImpl
+        implements MapsPresenter, OnMapReadyCallback {
 
-// 03/05/17 options to switch between map styles (satalite, terrain, mixed, custom)
-// Ooops. MapType selection done. For mapStyles i can use this example:
-// https://github.com/googlemaps/android-samples/blob/master/ApiDemos/app/src/main/java/com/example/mapdemo/StyledMapDemoActivity.java
-// https://developers.google.com/maps/documentation/android-api/styling
-public class MapsActivity extends AppCompatActivity
-        implements OnMapReadyCallback, ActivityCompat.OnRequestPermissionsResultCallback {
-
-    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
-    private boolean mPermissionDenied = false;
+    private FragmentWrap mFragment;
+    private MapsView mMapsView;
 
     private GoogleMap mMap;
 
@@ -52,23 +37,35 @@ public class MapsActivity extends AppCompatActivity
 
     private MarkerInfoRealmStorage mMarkerInfoRealmStorage;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_maps);
-        ButterKnife.bind(this);
 
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
+    public MapsPresenterImpl(FragmentWrap fragment) {
+        mFragment = fragment;
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
-        MapStateUtils.saveCameraPositionFromMap(MapsActivity.this, mMap);
-        MapStateUtils.saveMapType(MapsActivity.this, mMap);
+    public void onAttachView(BaseView baseView) {
+        mMapsView = (MapsView) baseView;
+    }
+
+    @Override
+    public void onDetachView() {
+        MapStateUtils.saveCameraPositionFromMap(mFragment.getFragment().getContext(), mMap);
+        MapStateUtils.saveMapType(mFragment.getFragment().getContext(), mMap);
+
+        mMapsView = null;
+    }
+
+    @Override
+    public void onCreate() {
+        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        SupportMapFragment mapFragment = (SupportMapFragment) mFragment.getFragment().getChildFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(MapsPresenterImpl.this);
+    }
+
+    @Override
+    public GoogleMap getMap() {
+        return mMap;
     }
 
     @Override
@@ -79,41 +76,15 @@ public class MapsActivity extends AppCompatActivity
         mMarkers = new HashMap<>();
         mMarkerInfoRealmStorage = new MarkerInfoRealmStorageImpl();
         initUiSettings();
-        MapStateUtils.restoreCameraPositionOnMap(MapsActivity.this, mMap);
-        MapStateUtils.restoreMapType(MapsActivity.this, mMap);
-        enableMyLocation();
+        MapStateUtils.restoreCameraPositionOnMap(mFragment.getFragment().getContext(), mMap);
+        MapStateUtils.restoreMapType(mFragment.getFragment().getContext(), mMap);
+        mMapsView.enableMyLocation();
         initListeners();
         restoreMarkersOnMap();
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        if (requestCode != LOCATION_PERMISSION_REQUEST_CODE) {
-            return;
-        }
-        if (PermissionUtils.isPermissionGranted(permissions, grantResults,
-                Manifest.permission.ACCESS_FINE_LOCATION)) {
-            // Enable the my location layer if the permission has been granted.
-            enableMyLocation();
-        } else {
-            // Display the missing permission error dialog when the fragments resume.
-            mPermissionDenied = true;
-        }
-    }
-
-    @Override
-    protected void onResumeFragments() {
-        super.onResumeFragments();
-        if (mPermissionDenied) {
-            // Permission was not granted, display error dialog.
-            showMissingPermissionError();
-            mPermissionDenied = false;
-        }
-    }
-
-    @OnClick(R.id.iv_map_type_switch)
-    protected void onMapTypeSwitchClick() {
+    public void onMapTypeSwitchClick() {
         MapTypeDialog mapTypeDialog = new MapTypeDialog();
         mapTypeDialog.setSelectedMapType(mMap.getMapType());
         mapTypeDialog.setMapTypeSelectedListener(new MapTypeDialog.MapTypeSelectedListener() {
@@ -122,14 +93,8 @@ public class MapsActivity extends AppCompatActivity
                 mMap.setMapType(mapType);
             }
         });
-        mapTypeDialog.show(getSupportFragmentManager(), "MapTypeDialog");
+        mapTypeDialog.show(mFragment.getFragment().getActivity().getSupportFragmentManager(), "MapTypeDialog");
     }
-
-    private void showMissingPermissionError() {
-        PermissionUtils.PermissionDeniedDialog
-                .newInstance(true).show(getSupportFragmentManager(), "dialog");
-    }
-
 
     private void initUiSettings() {
         mMap.getUiSettings().setZoomControlsEnabled(true);
@@ -137,7 +102,7 @@ public class MapsActivity extends AppCompatActivity
         mMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
             @Override
             public boolean onMyLocationButtonClick() {
-                Toast.makeText(MapsActivity.this, R.string.map_ui_my_location_button_click_toast_message, Toast.LENGTH_SHORT).show();
+                mMapsView.showToast(mFragment.getFragment().getContext().getString(R.string.map_ui_my_location_button_click_toast_message));
                 // Return false so that we don't consume the event and the default behavior still occurs
                 // (the camera animates to the user's current position).
                 return false;
@@ -145,17 +110,6 @@ public class MapsActivity extends AppCompatActivity
         });
     }
 
-    private void enableMyLocation() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            // Permission to access the location is missing.
-            PermissionUtils.requestPermission(this, LOCATION_PERMISSION_REQUEST_CODE,
-                    Manifest.permission.ACCESS_FINE_LOCATION, true);
-        } else if (mMap != null) {
-            // Access to the location has been granted to the app.
-            mMap.setMyLocationEnabled(true);
-        }
-    }
 
     private void initListeners() {
         mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
@@ -186,7 +140,7 @@ public class MapsActivity extends AppCompatActivity
                 placeMarkerOnMap(markerInfo);
             }
         });
-        markerDialog.show(getSupportFragmentManager(), "MarkerDialog");
+        markerDialog.show(mFragment.getFragment().getActivity().getSupportFragmentManager(), "MarkerDialog");
     }
 
     private void placeMarkerOnMap(MarkerInfo markerInfo) {
@@ -213,7 +167,7 @@ public class MapsActivity extends AppCompatActivity
                 actionDeleteMarker(marker);
             }
         });
-        dialog.show(getSupportFragmentManager(), "MarkerInfoOptionsDialog");
+        dialog.show(mFragment.getFragment().getActivity().getSupportFragmentManager(), "MarkerInfoOptionsDialog");
     }
 
     private void actionEditMarker(Marker marker) {
@@ -240,7 +194,7 @@ public class MapsActivity extends AppCompatActivity
                 placeMarkerOnMap(markerInfo);
             }
         });
-        markerDialog.show(getSupportFragmentManager(), "MarkerDialog");
+        markerDialog.show(mFragment.getFragment().getActivity().getSupportFragmentManager(), "MarkerDialog");
     }
 
     private void actionDeleteMarker(final Marker marker) {

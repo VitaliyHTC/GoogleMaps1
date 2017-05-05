@@ -1,4 +1,4 @@
-package com.vitaliyhtc.googlemaps1.data;
+package com.vitaliyhtc.googlemaps1.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;

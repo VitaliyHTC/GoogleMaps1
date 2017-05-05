@@ -1,4 +1,4 @@
-package com.vitaliyhtc.googlemaps1.ui;
+package com.vitaliyhtc.googlemaps1.dialog;
 
 import android.app.Dialog;
 import android.content.DialogInterface;
