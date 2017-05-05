@@ -20,6 +20,7 @@ import com.vitaliyhtc.googlemaps1.view.BaseView;
 import com.vitaliyhtc.googlemaps1.view.MapsView;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -37,6 +38,8 @@ public class MapsPresenterImpl
 
     private MarkerInfoRealmStorage mMarkerInfoRealmStorage;
 
+    private Realm mRealm;
+
 
     public MapsPresenterImpl(FragmentWrap fragment) {
         mFragment = fragment;
@@ -45,6 +48,7 @@ public class MapsPresenterImpl
     @Override
     public void onAttachView(BaseView baseView) {
         mMapsView = (MapsView) baseView;
+        mRealm = Realm.getDefaultInstance();
     }
 
     @Override
@@ -53,6 +57,12 @@ public class MapsPresenterImpl
         MapStateUtils.saveMapType(mFragment.getFragment().getContext(), mMap);
 
         mMapsView = null;
+        if (mMarkerInfoRealmStorage != null) {
+            mMarkerInfoRealmStorage.onStop();
+        }
+        if (mRealm != null) {
+            mRealm.close();
+        }
     }
 
     @Override
@@ -197,19 +207,24 @@ public class MapsPresenterImpl
         markerDialog.show(mFragment.getFragment().getActivity().getSupportFragmentManager(), "MarkerDialog");
     }
 
-    private void actionDeleteMarker(final Marker marker) {
-        mMarkerInfoRealmStorage.deleteMarkerById((String) marker.getTag());
+    private void actionDeleteMarker(Marker marker) {
+        mMarkerInfoRealmStorage.deleteMarkerById(mRealm, (String) marker.getTag());
+        //mMarkers.get(marker.getTag()).remove();
         mMarkers.remove(marker.getTag());
         marker.remove();
     }
 
     private void restoreMarkersOnMap() {
-        // TODO: 03/05/17 marker request async
-        Realm realmInstance = Realm.getDefaultInstance();
-        for (MarkerInfo marker : mMarkerInfoRealmStorage.getAllMarkers(realmInstance)) {
-            placeMarkerOnMap(marker);
-        }
-        realmInstance.close();
+        mMarkerInfoRealmStorage.getAllMarkersAsync(mRealm,
+                new MarkerInfoRealmStorageImpl.AllMarkersResultListener() {
+                    @Override
+                    public void onAllMarkersFinded(List<MarkerInfo> markers) {
+                        for (MarkerInfo marker : markers) {
+                            placeMarkerOnMap(marker);
+                        }
+                    }
+                }
+        );
     }
 
 }

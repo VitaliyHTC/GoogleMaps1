@@ -93,7 +93,6 @@ public class MarkerInfoOptionsDialog extends DialogFragment {
 
     public interface MarkerInfoOptionsDialogCallback {
         void onMarkerEdit(Marker marker);
-
         void onMarkerDelete(Marker marker);
     }
 }

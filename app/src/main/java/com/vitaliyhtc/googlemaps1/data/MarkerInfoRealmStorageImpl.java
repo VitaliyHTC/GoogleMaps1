@@ -3,17 +3,28 @@ package com.vitaliyhtc.googlemaps1.data;
 import com.vitaliyhtc.googlemaps1.model.MarkerInfo;
 import com.vitaliyhtc.googlemaps1.model.MarkerWrap;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import io.realm.OrderedCollectionChangeSet;
+import io.realm.OrderedRealmCollectionChangeListener;
 import io.realm.Realm;
+import io.realm.RealmResults;
 
 import static com.vitaliyhtc.googlemaps1.Config.KEY_MARKER_ID;
 
 // write operation need to be moved to realm.executeTransactionAsync() ???
 public class MarkerInfoRealmStorageImpl implements MarkerInfoRealmStorage {
 
+    private RealmResults<MarkerInfo> mAllMarkersResult;
+
     public MarkerInfoRealmStorageImpl() {
+    }
+
+    @Override
+    public void onStop() {
+        if (mAllMarkersResult != null) {
+            mAllMarkersResult.removeAllChangeListeners();
+        }
     }
 
     public void saveMarker(final MarkerInfo markerInfo) {
@@ -69,33 +80,33 @@ public class MarkerInfoRealmStorageImpl implements MarkerInfoRealmStorage {
         return markerWrap.getMarkerInfo();
     }
 
-    public void deleteMarkerById(final String markerId) {
-        Realm realm = Realm.getDefaultInstance();
-        realm.executeTransaction(new Realm.Transaction() {
-            @Override
-            public void execute(Realm realm) {
-                MarkerInfo markerInfo1 = realm
-                        .where(MarkerInfo.class)
-                        .equalTo(KEY_MARKER_ID, markerId)
-                        .findFirst();
-                markerInfo1.deleteFromRealm();
-            }
-        });
-        realm.close();
+    public void deleteMarkerById(Realm realm, final String markerId) {
+        realm.executeTransaction(
+                new Realm.Transaction() {
+                    @Override
+                    public void execute(Realm realm) {
+                        MarkerInfo markerInfo1 = realm
+                                .where(MarkerInfo.class)
+                                .equalTo(KEY_MARKER_ID, markerId)
+                                .findFirst();
+                        markerInfo1.deleteFromRealm();
+                    }
+                }
+        );
     }
 
-    /**
-     * @param realmInstance must be closed after after markers usage to release resources.
-     * @return All Markers that stored in Realm db
-     */
-    public List<MarkerInfo> getAllMarkers(Realm realmInstance) {
-        final List<MarkerInfo> markers1 = new ArrayList<>();
-        realmInstance.executeTransaction(new Realm.Transaction() {
+    public void getAllMarkersAsync(Realm realm, final AllMarkersResultListener listener) {
+        OrderedRealmCollectionChangeListener<RealmResults<MarkerInfo>> allMarkersCallback = new OrderedRealmCollectionChangeListener<RealmResults<MarkerInfo>>() {
             @Override
-            public void execute(Realm realm) {
-                markers1.addAll(realm.where(MarkerInfo.class).findAll());
+            public void onChange(RealmResults<MarkerInfo> results, OrderedCollectionChangeSet changeSet) {
+                listener.onAllMarkersFinded(results);
             }
-        });
-        return markers1;
+        };
+        mAllMarkersResult = realm.where(MarkerInfo.class).findAllAsync();
+        mAllMarkersResult.addChangeListener(allMarkersCallback);
+    }
+
+    public interface AllMarkersResultListener {
+        void onAllMarkersFinded(List<MarkerInfo> markers);
     }
 }
