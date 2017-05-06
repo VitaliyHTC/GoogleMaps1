@@ -7,6 +7,7 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import com.vitaliyhtc.googlemaps1.view.MapsFragment;
 import com.vitaliyhtc.googlemaps1.view.MarkersListFragment;
 
+// TODO: 06/05/17 check https://boosting.atlassian.net/wiki/display/ACSS/2.+Code+style#id-2.Codestyle-Comments
 public class ViewPagerAdapter extends FragmentStatePagerAdapter {
     private CharSequence Titles[]; // This will Store the Titles of the Tabs which are Going to be passed when ViewPagerAdapter is created
     private int NumbOfTabs; // Store the number of tabs, this will also be passed when the ViewPagerAdapter is created

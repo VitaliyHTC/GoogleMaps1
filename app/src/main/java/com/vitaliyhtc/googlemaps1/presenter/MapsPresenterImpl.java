@@ -33,15 +33,18 @@ public class MapsPresenterImpl
     private FragmentWrap mFragment;
     private MapsView mMapsView;
 
+    // TODO: 06/05/17 it is view part
     private GoogleMap mMap;
 
     private Map<String, Marker> mMarkers;
 
     private MarkerInfoRealmStorage mMarkerInfoRealmStorage;
 
+    // TODO: 06/05/17 it is model part
     private Realm mRealm;
 
 
+    // TODO: 06/05/17 presented should only connect view with model
     public MapsPresenterImpl(FragmentWrap fragment) {
         mFragment = fragment;
     }
@@ -98,6 +101,11 @@ public class MapsPresenterImpl
         restoreMarkersOnMapAndListenForChanges();
     }
 
+    // TODO: 06/05/17 should be::
+    // view(onMapTypeSwitchClick) -> presenter, // done
+    // presenter(displayMapTypePickDialog) -> view,
+    // view(onMapTypeSelected) -> presenter,
+    // presenter(applyMapType) -> view
     @Override
     public void onMapTypeSwitchClick() {
         MapTypeDialog mapTypeDialog = new MapTypeDialog();

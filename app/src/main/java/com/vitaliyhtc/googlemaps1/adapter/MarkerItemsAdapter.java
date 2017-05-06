@@ -12,6 +12,7 @@ import com.vitaliyhtc.googlemaps1.model.MarkerColorItem;
 
 import java.util.List;
 
+// TODO: 06/05/17 check todo's for MarkerInfoRecyclerViewAdapter
 public class MarkerItemsAdapter extends RecyclerView.Adapter<MarkerItemsAdapter.ViewHolder> {
 
     private ClickListener mClickListener;

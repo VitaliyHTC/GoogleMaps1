@@ -18,6 +18,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.realm.Realm;
 
+// TODO: 06/05/17 split to MVP
 public class MarkersListFragment extends Fragment {
 
     private Realm realm;

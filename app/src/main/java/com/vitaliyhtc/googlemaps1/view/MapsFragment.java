@@ -132,6 +132,7 @@ public class MapsFragment extends Fragment
         }
     }
 
+    // TODO: 06/05/17 use dexter for permissions
     private void showMissingPermissionError() {
         PermissionUtils.PermissionDeniedDialog
                 .newInstance(true).show(getActivity().getSupportFragmentManager(), "dialog");

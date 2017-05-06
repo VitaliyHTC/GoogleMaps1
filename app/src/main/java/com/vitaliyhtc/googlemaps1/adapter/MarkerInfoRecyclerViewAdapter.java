@@ -38,10 +38,12 @@ public class MarkerInfoRecyclerViewAdapter extends RealmRecyclerViewAdapter<Mark
         holder.bind(getItem(position));
     }
 
+    // TODO: 06/05/17 what if ClickListener changed?
     public void setOnClickListener(ClickListener mClickListener) {
         this.mClickListener = mClickListener;
     }
 
+    // TODO: 06/05/17 this method should not be here, can be converter method in MarkerInfo model or mapper
     public static int getImageResIdFromHue(float hue) {
         if (hue == BitmapDescriptorFactory.HUE_RED) {
             return R.drawable.ic_place_red_48dp;
@@ -68,7 +70,9 @@ public class MarkerInfoRecyclerViewAdapter extends RealmRecyclerViewAdapter<Mark
         }
     }
 
+    // TODO: 06/05/17 avoid My- in names
     class MyViewHolder extends RecyclerView.ViewHolder {
+        // TODO: 06/05/17 butterknife?
         ImageView mImageView;
         TextView mTextView;
 
@@ -81,6 +85,7 @@ public class MarkerInfoRecyclerViewAdapter extends RealmRecyclerViewAdapter<Mark
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    // TODO: 06/05/17 highlight selected item
                     int adapterPosition = getAdapterPosition();
                     if (adapterPosition != RecyclerView.NO_POSITION && mClickListener != null) {
                         mClickListener.onItemClick(adapterPosition);
@@ -99,6 +104,7 @@ public class MarkerInfoRecyclerViewAdapter extends RealmRecyclerViewAdapter<Mark
         }
     }
 
+    // TODO: 06/05/17 be more specific OnMarkerIconClickListener
     public interface ClickListener {
         void onItemClick(int position);
     }
