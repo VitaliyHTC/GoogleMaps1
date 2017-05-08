@@ -105,7 +105,7 @@ public class MarkerDialog extends DialogFragment {
 
     private void initMarkerColorsRecyclerView() {
         initMarkerColorsList();
-        MarkerItemsAdapter adapter = new MarkerItemsAdapter(new MarkerItemsAdapter.ClickListener() {
+        MarkerItemsAdapter adapter = new MarkerItemsAdapter(new MarkerItemsAdapter.MarkerItemClickListener() {
             @Override
             public void onItemClick(int position) {
                 mSelectedMarkerHue = mMarkerColorItems.get(position).getMarkerHue();

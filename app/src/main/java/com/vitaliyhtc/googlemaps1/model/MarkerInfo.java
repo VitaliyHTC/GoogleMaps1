@@ -1,5 +1,8 @@
 package com.vitaliyhtc.googlemaps1.model;
 
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.vitaliyhtc.googlemaps1.R;
+
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 
@@ -27,6 +30,32 @@ public class MarkerInfo extends RealmObject {
         markerInfo1.setLongitude(markerInfo.getLongitude());
 
         return markerInfo1;
+    }
+
+    public static int getImageResIdFromHue(float hue) {
+        if (hue == BitmapDescriptorFactory.HUE_RED) {
+            return R.drawable.ic_place_red_48dp;
+        } else if (hue == BitmapDescriptorFactory.HUE_ORANGE) {
+            return R.drawable.ic_place_orange_48dp;
+        } else if (hue == BitmapDescriptorFactory.HUE_YELLOW) {
+            return R.drawable.ic_place_yellow_48dp;
+        } else if (hue == BitmapDescriptorFactory.HUE_GREEN) {
+            return R.drawable.ic_place_green_48dp;
+        } else if (hue == BitmapDescriptorFactory.HUE_CYAN) {
+            return R.drawable.ic_place_cyan_48dp;
+        } else if (hue == BitmapDescriptorFactory.HUE_AZURE) {
+            return R.drawable.ic_place_azure_48dp;
+        } else if (hue == BitmapDescriptorFactory.HUE_BLUE) {
+            return R.drawable.ic_place_blue_48dp;
+        } else if (hue == BitmapDescriptorFactory.HUE_VIOLET) {
+            return R.drawable.ic_place_violet_48dp;
+        } else if (hue == BitmapDescriptorFactory.HUE_MAGENTA) {
+            return R.drawable.ic_place_magenta_48dp;
+        } else if (hue == BitmapDescriptorFactory.HUE_ROSE) {
+            return R.drawable.ic_place_rose_48dp;
+        } else {
+            return R.drawable.ic_place_red_48dp;
+        }
     }
 
     public void setId(String id) {

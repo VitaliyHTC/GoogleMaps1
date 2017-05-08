@@ -12,14 +12,16 @@ import com.vitaliyhtc.googlemaps1.model.MarkerColorItem;
 
 import java.util.List;
 
-// TODO: 06/05/17 check todo's for MarkerInfoRecyclerViewAdapter
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 public class MarkerItemsAdapter extends RecyclerView.Adapter<MarkerItemsAdapter.ViewHolder> {
 
-    private ClickListener mClickListener;
+    private MarkerItemClickListener mMarkerItemClickListener;
     private List<MarkerColorItem> mMarkerColorItems;
 
-    public MarkerItemsAdapter(ClickListener clickListener) {
-        mClickListener = clickListener;
+    public MarkerItemsAdapter(MarkerItemClickListener markerItemClickListener) {
+        mMarkerItemClickListener = markerItemClickListener;
     }
 
     public void setMarkerColorItems(List<MarkerColorItem> markerColorItems) {
@@ -31,13 +33,14 @@ public class MarkerItemsAdapter extends RecyclerView.Adapter<MarkerItemsAdapter.
         View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.list_item_marker, parent, false);
         ViewHolder viewHolder = new ViewHolder(v);
-        viewHolder.setOnClickListener(mClickListener);
+        viewHolder.setOnClickListener(mMarkerItemClickListener);
         return viewHolder;
     }
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         holder.bind(mMarkerColorItems.get(position));
+        //holder.setOnClickListener(mMarkerItemClickListener);
     }
 
     @Override
@@ -46,29 +49,31 @@ public class MarkerItemsAdapter extends RecyclerView.Adapter<MarkerItemsAdapter.
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
+        @BindView(R.id.iv_marker)
         ImageView mImageView;
+        @BindView(R.id.tv_MarkerColorItemTitle)
         TextView mTextView;
 
-        private ClickListener mClickListener;
+        private MarkerItemClickListener mMarkerItemClickListener;
 
         ViewHolder(View v){
             super(v);
-            mImageView = (ImageView) v.findViewById(R.id.iv_marker);
-            mTextView = (TextView) v.findViewById(R.id.tv_MarkerColorItemTitle);
+            ButterKnife.bind(this, v);
 
             v.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    // TODO: 06/05/17 highlight selected item
                     int adapterPosition = getAdapterPosition();
                     if (adapterPosition != RecyclerView.NO_POSITION) {
-                        mClickListener.onItemClick(getAdapterPosition());
+                        mMarkerItemClickListener.onItemClick(getAdapterPosition());
                     }
                 }
             });
         }
 
-        void setOnClickListener(ClickListener clickListener) {
-            mClickListener = clickListener;
+        void setOnClickListener(MarkerItemClickListener markerItemClickListener) {
+            mMarkerItemClickListener = markerItemClickListener;
         }
 
         void bind(MarkerColorItem item) {
@@ -77,7 +82,7 @@ public class MarkerItemsAdapter extends RecyclerView.Adapter<MarkerItemsAdapter.
         }
     }
 
-    public interface ClickListener {
+    public interface MarkerItemClickListener {
         void onItemClick(int position);
     }
 }

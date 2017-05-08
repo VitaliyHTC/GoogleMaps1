@@ -10,6 +10,9 @@
 
     <string name="map_ui_my_location_button_click_toast_message">Updating current position</string>
 
+    <string name="permission_rationale_title">Access Fine Location</string>
+    <string name="permission_rationale_message">You need to grant this permission for application access to your location and ability to show it on map.</string>
+
     <string name="new_marker_dialog_add_marker_button">Add</string>
     <string name="dialog_cancel_button">Cancel</string>
     <string name="new_marker_dialog_title">Create new Marker</string>

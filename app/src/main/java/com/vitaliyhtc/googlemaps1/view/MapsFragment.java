@@ -1,14 +1,11 @@
 package com.vitaliyhtc.googlemaps1.view;
 
-import android.Manifest;
-import android.content.pm.PackageManager;
+import android.content.DialogInterface;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,29 +13,42 @@ import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.karumi.dexter.Dexter;
+import com.karumi.dexter.PermissionToken;
+import com.karumi.dexter.listener.PermissionDeniedResponse;
+import com.karumi.dexter.listener.PermissionGrantedResponse;
+import com.karumi.dexter.listener.PermissionRequest;
+import com.karumi.dexter.listener.single.PermissionListener;
 import com.vitaliyhtc.googlemaps1.R;
-import com.vitaliyhtc.googlemaps1.model.FragmentWrap;
+import com.vitaliyhtc.googlemaps1.dialog.MapTypeDialog;
+import com.vitaliyhtc.googlemaps1.dialog.MarkerDialog;
+import com.vitaliyhtc.googlemaps1.dialog.MarkerInfoOptionsDialog;
+import com.vitaliyhtc.googlemaps1.model.MarkerInfo;
 import com.vitaliyhtc.googlemaps1.presenter.MapsPresenter;
 import com.vitaliyhtc.googlemaps1.presenter.MapsPresenterImpl;
-import com.vitaliyhtc.googlemaps1.util.PermissionUtils;
+import com.vitaliyhtc.googlemaps1.util.MapStateUtils;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-// 03/05/17 options to switch between map styles (satalite, terrain, mixed, custom)
-// Ooops. MapType selection done. For mapStyles i can use this example:
-// https://github.com/googlemaps/android-samples/blob/master/ApiDemos/app/src/main/java/com/example/mapdemo/StyledMapDemoActivity.java
-// https://developers.google.com/maps/documentation/android-api/styling
-
 public class MapsFragment extends Fragment
-        implements MapsView, ActivityCompat.OnRequestPermissionsResultCallback {
-
-    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
+        implements MapsView, OnMapReadyCallback, ActivityCompat.OnRequestPermissionsResultCallback {
 
     private MapsPresenter mMapsPresenter;
 
-    private boolean mPermissionDenied = false;
+    private GoogleMap mMap;
 
+    private Map<String, Marker> mMarkers;
 
     @Nullable
     @Override
@@ -63,9 +73,16 @@ public class MapsFragment extends Fragment
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        mMapsPresenter = new MapsPresenterImpl(new FragmentWrap(MapsFragment.this));
+
+        mMarkers = new HashMap<>();
+
+        mMapsPresenter = new MapsPresenterImpl();
         mMapsPresenter.onAttachView(MapsFragment.this);
-        mMapsPresenter.onCreate();
+
+        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(MapsFragment.this);
     }
 
     @Override
@@ -75,19 +92,22 @@ public class MapsFragment extends Fragment
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        if (mPermissionDenied) {
-            // Permission was not granted, display error dialog.
-            showMissingPermissionError();
-            mPermissionDenied = false;
-        }
+    public void onStop() {
+        super.onStop();
+        MapStateUtils.saveCameraPositionFromMap(getContext(), mMap);
+        MapStateUtils.saveMapType(getContext(), mMap);
     }
 
     @Override
-    public void onStop() {
-        super.onStop();
-        mMapsPresenter.onStop();
+    public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
+
+        initUiSettings();
+        MapStateUtils.restoreCameraPositionOnMap(getContext(), mMap);
+        MapStateUtils.restoreMapType(getContext(), mMap);
+        requestPermissionAndEnableMyLocation();
+        initListeners();
+        mMapsPresenter.getAllMarkers();
     }
 
     @OnClick(R.id.iv_map_type_switch)
@@ -96,46 +116,199 @@ public class MapsFragment extends Fragment
     }
 
     @Override
-    public void showToast(String message) {
-        Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        if (requestCode != LOCATION_PERMISSION_REQUEST_CODE) {
-            return;
-        }
-        if (PermissionUtils.isPermissionGranted(permissions, grantResults,
-                Manifest.permission.ACCESS_FINE_LOCATION)) {
-            // Enable the my location layer if the permission has been granted.
-            enableMyLocation();
-        } else {
-            // Display the missing permission error dialog when the fragments resume.
-            mPermissionDenied = true;
-        }
-    }
-
-    @Override
-    public void enableMyLocation() {
-        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            // Permission to access the location is missing.
-            PermissionUtils.requestPermission((AppCompatActivity) getActivity(), LOCATION_PERMISSION_REQUEST_CODE,
-                    Manifest.permission.ACCESS_FINE_LOCATION, true);
-        } else {
-            GoogleMap map = mMapsPresenter.getMap();
-            if (map != null) {
-                // Access to the location has been granted to the app.
-                map.setMyLocationEnabled(true);
+    public void displayMapTypePickDialog() {
+        MapTypeDialog mapTypeDialog = new MapTypeDialog();
+        mapTypeDialog.setSelectedMapType(mMap.getMapType());
+        mapTypeDialog.setMapTypeSelectedListener(new MapTypeDialog.MapTypeSelectedListener() {
+            @Override
+            public void onMapTypeSelected(int mapType) {
+                mMapsPresenter.onMapTypeSelected(mapType);
             }
+        });
+        mapTypeDialog.show(getChildFragmentManager(), "MapTypeDialog");
+    }
+
+    @Override
+    public void applyMapType(int mapType) {
+        mMap.setMapType(mapType);
+    }
+
+
+    @Override
+    public Marker placeMarkerOnMapAndGet(MarkerInfo markerInfo) {
+        MarkerOptions markerOptions = new MarkerOptions()
+                .position(new LatLng(markerInfo.getLatitude(), markerInfo.getLongitude()))
+                .title(markerInfo.getTitle())
+                .icon(BitmapDescriptorFactory.defaultMarker(markerInfo.getIconHue()));
+        Marker marker1 = mMap.addMarker(markerOptions);
+        marker1.setTag(markerInfo.getId());
+        return marker1;
+    }
+
+    @Override
+    public void onAllMarkersRetrieved(List<MarkerInfo> markers) {
+        for (MarkerInfo markerInfo : markers) {
+            placeNewMarkerOnMap(markerInfo);
         }
     }
 
-    // TODO: 06/05/17 use dexter for permissions
-    private void showMissingPermissionError() {
-        PermissionUtils.PermissionDeniedDialog
-                .newInstance(true).show(getActivity().getSupportFragmentManager(), "dialog");
+    @Override
+    public void placeNewMarkerOnMap(MarkerInfo markerInfo) {
+        Marker marker = placeMarkerOnMapAndGet(markerInfo);
+        mMarkers.put((String) marker.getTag(), marker);
+    }
+
+    @Override
+    public void displayNewMarkerDialog(LatLng latLng) {
+        MarkerDialog markerDialog = new MarkerDialog();
+        markerDialog.setLatLng(latLng);
+        markerDialog.setMarkerDialogCallback(new MarkerDialog.MarkerDialogCallback() {
+            @Override
+            public void onMarkerDialogSuccess(MarkerInfo markerInfo) {
+                mMapsPresenter.onNewMarkerDialogSuccess(markerInfo);
+            }
+        });
+        markerDialog.show(getChildFragmentManager(), "MarkerDialog");
+    }
+
+    @Override
+    public void displayMarkerInfoAndOptionsDialog(Marker marker) {
+        MarkerInfoOptionsDialog dialog = new MarkerInfoOptionsDialog();
+        dialog.setMarker(marker);
+        dialog.setCallback(new MarkerInfoOptionsDialog.MarkerInfoOptionsDialogCallback() {
+            @Override
+            public void onMarkerEdit(Marker marker) {
+                mMapsPresenter.actionEditMarker(marker);
+            }
+
+            @Override
+            public void onMarkerDelete(Marker marker) {
+                mMapsPresenter.actionDeleteMarker(marker);
+            }
+        });
+        dialog.show(getChildFragmentManager(), "MarkerInfoOptionsDialog");
+    }
+
+    @Override
+    public void displayEditMarkerDialog(MarkerInfo markerInfo) {
+        MarkerDialog markerDialog = new MarkerDialog();
+        markerDialog.setMarkerInfo(markerInfo);
+        markerDialog.setMarkerDialogCallback(new MarkerDialog.MarkerDialogCallback() {
+            @Override
+            public void onMarkerDialogSuccess(MarkerInfo markerInfo) {
+                mMapsPresenter.onEditMarkerDialogSuccess(markerInfo);
+            }
+        });
+        markerDialog.show(getChildFragmentManager(), "MarkerDialog");
+    }
+
+    @Override
+    public void updateMarkerUi(MarkerInfo markerInfo) {
+        if (mMarkers.containsKey(markerInfo.getId())) {
+            mMarkers.get(markerInfo.getId()).remove();
+            mMarkers.remove(markerInfo.getId());
+        }
+        placeNewMarkerOnMap(markerInfo);
+    }
+
+    @Override
+    public void deleteMarkerUi(Marker marker) {
+        mMarkers.remove((String) marker.getTag());
+        marker.remove();
+    }
+
+
+    private void requestPermissionAndEnableMyLocation() {
+        requestAccessFineLocationPermission();
+    }
+
+    @SuppressWarnings({"MissingPermission"})
+    private void requestAccessFineLocationPermission() {
+        Dexter.withActivity(MapsFragment.this.getActivity())
+                .withPermission(android.Manifest.permission.ACCESS_FINE_LOCATION)
+                .withListener(new PermissionListener() {
+                    @Override
+                    public void onPermissionGranted(PermissionGrantedResponse response) {
+                        if (mMap != null) {
+                            // Access to the location has been granted to the app.
+                            mMap.setMyLocationEnabled(true);
+                        }
+                    }
+
+                    @Override
+                    public void onPermissionDenied(PermissionDeniedResponse response) {
+                        onPermissionDeniedResume(response);
+                    }
+
+                    @Override
+                    public void onPermissionRationaleShouldBeShown(PermissionRequest permission, PermissionToken token) {
+                        onPermissionRationaleShouldBeShownResume(permission, token);
+                    }
+                }).check();
+    }
+
+    private void onPermissionDeniedResume(PermissionDeniedResponse response) {
+        // Do nothing.
+    }
+
+    private void onPermissionRationaleShouldBeShownResume(PermissionRequest permission, final PermissionToken token) {
+        new AlertDialog.Builder(getContext()).setTitle(R.string.permission_rationale_title)
+                .setMessage(R.string.permission_rationale_message)
+                .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        token.cancelPermissionRequest();
+                    }
+                })
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        token.continuePermissionRequest();
+                    }
+                })
+                .setOnDismissListener(new DialogInterface.OnDismissListener() {
+                    @Override
+                    public void onDismiss(DialogInterface dialog) {
+                        token.cancelPermissionRequest();
+                    }
+                })
+                .show();
+    }
+
+    private void initUiSettings() {
+        mMap.getUiSettings().setZoomControlsEnabled(true);
+        mMap.getUiSettings().setCompassEnabled(true);
+        mMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
+            @Override
+            public boolean onMyLocationButtonClick() {
+                showToastShort(getString(R.string.map_ui_my_location_button_click_toast_message));
+                // Return false so that we don't consume the event and the default behavior still occurs
+                // (the camera animates to the user's current position).
+                return false;
+            }
+        });
+    }
+
+    private void initListeners() {
+        mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+            @Override
+            public void onMapLongClick(LatLng latLng) {
+                mMapsPresenter.actionNewMarker(latLng);
+            }
+        });
+        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                mMapsPresenter.actionMarkerOptions(marker);
+                return false;
+            }
+        });
+    }
+
+    private void showToastShort(String message) {
+        Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
     }
 
 }

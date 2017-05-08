@@ -3,8 +3,6 @@ package com.vitaliyhtc.googlemaps1.data;
 import com.vitaliyhtc.googlemaps1.model.MarkerInfo;
 import com.vitaliyhtc.googlemaps1.model.MarkerWrap;
 
-import java.util.List;
-
 import io.realm.OrderedCollectionChangeSet;
 import io.realm.OrderedRealmCollectionChangeListener;
 import io.realm.Realm;
@@ -12,22 +10,31 @@ import io.realm.RealmResults;
 
 import static com.vitaliyhtc.googlemaps1.Config.KEY_MARKER_ID;
 
-public class MarkerInfoRealmStorageImpl implements MarkerInfoRealmStorage {
+public class MarkerInfoRealmStorageImpl implements MarkerInfoStorage {
 
     private RealmResults<MarkerInfo> mAllMarkersResult;
+
+    private Realm mRealmInstance;
 
     public MarkerInfoRealmStorageImpl() {
     }
 
     @Override
-    public void onStop() {
+    public void initResources() {
+        mRealmInstance = Realm.getDefaultInstance();
+    }
+
+    @Override
+    public void releaseResources() {
+        mRealmInstance.close();
         if (mAllMarkersResult != null) {
             mAllMarkersResult.removeAllChangeListeners();
         }
     }
 
-    public void saveMarker(Realm realmInstance, final MarkerInfo markerInfo) {
-        realmInstance.executeTransactionAsync(new Realm.Transaction() {
+    @Override
+    public void saveMarker(final MarkerInfo markerInfo) {
+        mRealmInstance.executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm bgRealm) {
                 bgRealm.copyToRealm(markerInfo);
@@ -35,9 +42,10 @@ public class MarkerInfoRealmStorageImpl implements MarkerInfoRealmStorage {
         });
     }
 
-    public void updateMarker(Realm realmInstance, final MarkerInfo markerInfo) {
+    @Override
+    public void updateMarker(final MarkerInfo markerInfo) {
         if (markerInfo != null) {
-            realmInstance.executeTransactionAsync(new Realm.Transaction() {
+            mRealmInstance.executeTransactionAsync(new Realm.Transaction() {
                 @Override
                 public void execute(Realm realm) {
                     MarkerInfo markerInfo1 = realm
@@ -55,9 +63,10 @@ public class MarkerInfoRealmStorageImpl implements MarkerInfoRealmStorage {
         }
     }
 
-    public void getMarkerById(Realm realmInstance, final String markerId, final MarkerRetrievedListener listener) {
+    @Override
+    public void getMarkerById(final String markerId, final MarkerInfoRetrievedListener listener) {
         final MarkerWrap markerWrap = new MarkerWrap();
-        realmInstance.executeTransactionAsync(
+        mRealmInstance.executeTransactionAsync(
                 new Realm.Transaction() {
                     @Override
                     public void execute(Realm realm) {
@@ -77,8 +86,9 @@ public class MarkerInfoRealmStorageImpl implements MarkerInfoRealmStorage {
         );
     }
 
-    public void deleteMarkerById(Realm realm, final String markerId) {
-        realm.executeTransactionAsync(
+    @Override
+    public void deleteMarkerById(final String markerId) {
+        mRealmInstance.executeTransactionAsync(
                 new Realm.Transaction() {
                     @Override
                     public void execute(Realm realm) {
@@ -92,22 +102,20 @@ public class MarkerInfoRealmStorageImpl implements MarkerInfoRealmStorage {
         );
     }
 
-    public void getAllMarkersAsync(Realm realm, final AllMarkersResultListener listener) {
+    @Override
+    public void getAllMarkersAsync(final MarkerInfoAllMarkersResultListener listener) {
         OrderedRealmCollectionChangeListener<RealmResults<MarkerInfo>> allMarkersCallback = new OrderedRealmCollectionChangeListener<RealmResults<MarkerInfo>>() {
             @Override
             public void onChange(RealmResults<MarkerInfo> results, OrderedCollectionChangeSet changeSet) {
-                listener.onAllMarkersFinded(results);
+                if (changeSet == null) {
+                    // The first time async returns with an null changeSet.
+                    listener.onAllMarkersFind(results);
+                } else {
+                    // Called on every update.
+                }
             }
         };
-        mAllMarkersResult = realm.where(MarkerInfo.class).findAllAsync();
+        mAllMarkersResult = mRealmInstance.where(MarkerInfo.class).findAllAsync();
         mAllMarkersResult.addChangeListener(allMarkersCallback);
-    }
-
-    public interface MarkerRetrievedListener {
-        void onMarkerRetrieved(MarkerInfo markerInfo);
-    }
-
-    public interface AllMarkersResultListener {
-        void onAllMarkersFinded(List<MarkerInfo> markers);
     }
 }
