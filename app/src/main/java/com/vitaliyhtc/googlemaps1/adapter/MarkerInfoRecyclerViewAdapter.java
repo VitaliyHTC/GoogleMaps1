@@ -6,19 +6,28 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.vitaliyhtc.googlemaps1.Config;
 import com.vitaliyhtc.googlemaps1.R;
 import com.vitaliyhtc.googlemaps1.model.MarkerInfo;
+import com.vitaliyhtc.googlemaps1.recyclerview.HolderClickObserver;
+import com.vitaliyhtc.googlemaps1.recyclerview.SelectionHelper;
+import com.vitaliyhtc.googlemaps1.recyclerview.SelectionObserver;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.realm.RealmRecyclerViewAdapter;
 import io.realm.RealmResults;
 
-public class MarkerInfoRecyclerViewAdapter extends RealmRecyclerViewAdapter<MarkerInfo, MarkerInfoRecyclerViewAdapter.ViewHolder> {
+public class MarkerInfoRecyclerViewAdapter
+        extends RealmRecyclerViewAdapter<MarkerInfo, MarkerInfoRecyclerViewAdapter.ItemViewHolder>
+        implements SelectionObserver, HolderClickObserver {
 
     private OnMarkerIconClickListener mOnMarkerIconClickListener;
+
+    private SelectionHelper mSelectionHelper;
 
     public MarkerInfoRecyclerViewAdapter(
             @Nullable RealmResults<MarkerInfo> data,
@@ -28,49 +37,69 @@ public class MarkerInfoRecyclerViewAdapter extends RealmRecyclerViewAdapter<Mark
         super(data, autoUpdate);
         setHasStableIds(true);
         mOnMarkerIconClickListener = markerIconClickListener;
+
+        mSelectionHelper = new SelectionHelper();
+        mSelectionHelper.registerSelectionObserver(this);
+        mSelectionHelper.registerHolderClickObserver(this);
     }
 
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public void onSelectedChanged(RecyclerView.ViewHolder holder, boolean isSelected) {
+        int color = Config.RV_SELECTED_OFF_BACKGROUND_COLOR;
+        if (isSelected) {
+            color = Config.RV_SELECTED_ON_BACKGROUND_COLOR;
+        }
+        ((ItemViewHolder) holder).setBackgroundColor(color);
+    }
+
+    @Override
+    public void onSelectableChanged(boolean isSelectable) {
+    }
+
+    @Override
+    public void onHolderClick(RecyclerView.ViewHolder holder) {
+        int adapterPosition = holder.getAdapterPosition();
+        if (adapterPosition != RecyclerView.NO_POSITION && mOnMarkerIconClickListener != null) {
+            mOnMarkerIconClickListener.onItemClick(adapterPosition);
+        }
+    }
+
+    @Override
+    public boolean onHolderLongClick(RecyclerView.ViewHolder holder) {
+        // return event isConsumed flag.
+        return false;
+    }
+
+    @Override
+    public ItemViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.list_item_marker_info, parent, false);
-        ViewHolder viewHolder = new ViewHolder(itemView);
-        viewHolder.setOnClickListener(mOnMarkerIconClickListener);
-        return viewHolder;
+        ItemViewHolder itemViewHolder = new ItemViewHolder(itemView);
+        return mSelectionHelper.wrapSingleSelectable(itemViewHolder);
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(ItemViewHolder holder, int position) {
         holder.bind(getItem(position));
-        //holder.setOnClickListener(mOnMarkerIconClickListener);
+        mSelectionHelper.bindHolder(holder, position);
     }
 
 
-    class ViewHolder extends RecyclerView.ViewHolder {
+    class ItemViewHolder extends RecyclerView.ViewHolder {
+        @BindView(R.id.rl_wrap)
+        RelativeLayout mRelativeLayout;
         @BindView(R.id.iv_marker)
         ImageView mImageView;
         @BindView(R.id.tv_MarkerTitle)
         TextView mTextView;
 
-        private OnMarkerIconClickListener mOnMarkerIconClickListener;
-
-        public ViewHolder(View itemView) {
+        ItemViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    // TODO: 06/05/17 highlight selected item
-                    int adapterPosition = getAdapterPosition();
-                    if (adapterPosition != RecyclerView.NO_POSITION && mOnMarkerIconClickListener != null) {
-                        mOnMarkerIconClickListener.onItemClick(adapterPosition);
-                    }
-                }
-            });
         }
 
-        void setOnClickListener(OnMarkerIconClickListener onMarkerIconClickListener) {
-            mOnMarkerIconClickListener = onMarkerIconClickListener;
+        void setBackgroundColor(int color) {
+            mRelativeLayout.setBackgroundColor(color);
         }
 
         void bind(MarkerInfo markerInfo) {

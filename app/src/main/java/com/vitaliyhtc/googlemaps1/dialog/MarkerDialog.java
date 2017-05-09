@@ -60,7 +60,6 @@ public class MarkerDialog extends DialogFragment {
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View view = inflater.inflate(R.layout.fragment_new_marker_dialog, null);
         ButterKnife.bind(this, view);
-        initMarkerColorsRecyclerView();
         builder.setView(view);
         String positiveButtonString;
         if (mMarkerInfo == null) {
@@ -71,6 +70,7 @@ public class MarkerDialog extends DialogFragment {
             positiveButtonString = getString(R.string.marker_dialog_save_marker_button);
             fillDataFromMarker(mMarkerInfo);
         }
+        initMarkerColorsRecyclerView();
         builder.setCancelable(true);
         builder.setPositiveButton(positiveButtonString, new DialogInterface.OnClickListener() {
             @Override
@@ -103,14 +103,18 @@ public class MarkerDialog extends DialogFragment {
         }
     }
 
+    // ! Need to be called after mSelectedMarkerHue value setting, or no correct marker will be preselected.
     private void initMarkerColorsRecyclerView() {
         initMarkerColorsList();
-        MarkerItemsAdapter adapter = new MarkerItemsAdapter(new MarkerItemsAdapter.MarkerItemClickListener() {
-            @Override
-            public void onItemClick(int position) {
-                mSelectedMarkerHue = mMarkerColorItems.get(position).getMarkerHue();
-            }
-        });
+        MarkerItemsAdapter adapter = new MarkerItemsAdapter(
+                new MarkerItemsAdapter.MarkerItemClickListener() {
+                    @Override
+                    public void onItemClick(int position) {
+                        mSelectedMarkerHue = mMarkerColorItems.get(position).getMarkerHue();
+                    }
+                },
+                mSelectedMarkerHue
+        );
         adapter.setMarkerColorItems(mMarkerColorItems);
         mRecyclerView.setAdapter(adapter);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
