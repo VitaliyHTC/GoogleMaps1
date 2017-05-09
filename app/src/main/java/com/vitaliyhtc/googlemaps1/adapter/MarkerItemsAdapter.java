@@ -61,7 +61,6 @@ public class MarkerItemsAdapter
 
     @Override
     public void onHolderClick(RecyclerView.ViewHolder holder) {
-        // TODO: 06/05/17 highlight selected item
         int adapterPosition = holder.getAdapterPosition();
         if (adapterPosition != RecyclerView.NO_POSITION && mMarkerItemClickListener != null) {
             mMarkerItemClickListener.onItemClick(adapterPosition);

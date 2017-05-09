@@ -53,12 +53,13 @@ public class MapsPresenterImpl
 
     @Override
     public void getAllMarkers() {
-        // TODO: 09/05/17 what if this call to long an view is destroyed?
         mMarkerInfoStorage.getAllMarkersAsync(
                 new MarkerInfoAllMarkersResultListener() {
                     @Override
                     public void onAllMarkersFind(List<MarkerInfo> markers) {
-                        mMapsView.onAllMarkersRetrieved(markers);
+                        if (mMapsView != null) {
+                            mMapsView.onAllMarkersRetrieved(markers);
+                        }
                     }
                 }
         );

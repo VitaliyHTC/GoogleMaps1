@@ -78,7 +78,6 @@ public class MarkerDialog extends DialogFragment {
                 onClickSubmit();
             }
         });
-        // TODO: 09/05/17 if you don't need listener use null
         builder.setNegativeButton(R.string.dialog_cancel_button, null);
         return builder.create();
     }

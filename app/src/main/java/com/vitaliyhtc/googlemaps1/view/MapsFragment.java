@@ -56,7 +56,8 @@ public class MapsFragment extends Fragment
         View view = inflater.inflate(R.layout.fragment_maps, container, false);
         ButterKnife.bind(this, view);
 
-        // TODO: 09/05/17 did you checked this after refactoring?
+        // TO.DO: 09/05/17 did you checked this after refactoring?
+        // present on 4.0.3 api 15, not reproduced on 6.0.1 api 23
         // fix for mysterious black view
         // http://stackoverflow.com/questions/13837697/viewpager-with-google-maps-api-v2-mysterious-black-view
         FrameLayout frameLayout = new FrameLayout(getActivity());
@@ -132,18 +133,6 @@ public class MapsFragment extends Fragment
     @Override
     public void applyMapType(int mapType) {
         mMap.setMapType(mapType);
-    }
-
-
-    @Override
-    public Marker placeMarkerOnMapAndGet(MarkerInfo markerInfo) {
-        MarkerOptions markerOptions = new MarkerOptions()
-                .position(new LatLng(markerInfo.getLatitude(), markerInfo.getLongitude()))
-                .title(markerInfo.getTitle())
-                .icon(BitmapDescriptorFactory.defaultMarker(markerInfo.getIconHue()));
-        Marker marker1 = mMap.addMarker(markerOptions);
-        marker1.setTag(markerInfo.getId());
-        return marker1;
     }
 
     @Override
@@ -306,6 +295,16 @@ public class MapsFragment extends Fragment
                 return false;
             }
         });
+    }
+
+    private Marker placeMarkerOnMapAndGet(MarkerInfo markerInfo) {
+        MarkerOptions markerOptions = new MarkerOptions()
+                .position(new LatLng(markerInfo.getLatitude(), markerInfo.getLongitude()))
+                .title(markerInfo.getTitle())
+                .icon(BitmapDescriptorFactory.defaultMarker(markerInfo.getIconHue()));
+        Marker marker1 = mMap.addMarker(markerOptions);
+        marker1.setTag(markerInfo.getId());
+        return marker1;
     }
 
     private void showToastShort(String message) {
