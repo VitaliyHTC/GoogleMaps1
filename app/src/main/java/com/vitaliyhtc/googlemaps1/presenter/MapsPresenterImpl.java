@@ -3,9 +3,9 @@ package com.vitaliyhtc.googlemaps1.presenter;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.vitaliyhtc.googlemaps1.data.MarkerInfoAllMarkersResultListener;
+import com.vitaliyhtc.googlemaps1.data.MarkerInfoRealmStorageImpl;
 import com.vitaliyhtc.googlemaps1.data.MarkerInfoRetrievedListener;
 import com.vitaliyhtc.googlemaps1.data.MarkerInfoStorage;
-import com.vitaliyhtc.googlemaps1.data.MarkerInfoRealmStorageImpl;
 import com.vitaliyhtc.googlemaps1.model.MarkerInfo;
 import com.vitaliyhtc.googlemaps1.view.BaseView;
 import com.vitaliyhtc.googlemaps1.view.MapsView;
@@ -53,6 +53,7 @@ public class MapsPresenterImpl
 
     @Override
     public void getAllMarkers() {
+        // TODO: 09/05/17 what if this call to long an view is destroyed?
         mMarkerInfoStorage.getAllMarkersAsync(
                 new MarkerInfoAllMarkersResultListener() {
                     @Override

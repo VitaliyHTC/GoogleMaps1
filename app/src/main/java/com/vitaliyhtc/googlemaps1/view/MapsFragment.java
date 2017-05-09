@@ -56,6 +56,7 @@ public class MapsFragment extends Fragment
         View view = inflater.inflate(R.layout.fragment_maps, container, false);
         ButterKnife.bind(this, view);
 
+        // TODO: 09/05/17 did you checked this after refactoring?
         // fix for mysterious black view
         // http://stackoverflow.com/questions/13837697/viewpager-with-google-maps-api-v2-mysterious-black-view
         FrameLayout frameLayout = new FrameLayout(getActivity());

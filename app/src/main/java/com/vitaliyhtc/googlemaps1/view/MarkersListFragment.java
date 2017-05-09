@@ -55,6 +55,7 @@ public class MarkersListFragment extends Fragment implements MarkersListView {
 
     private void setUpRecyclerView() {
         mMarkerInfoRecyclerViewAdapter = new MarkerInfoRecyclerViewAdapter(
+                // TODO: 09/05/17 don't do this. first of all call should be async. You need to init recycler view and later, when data will be available, display the list
                 mMarkersListPresenter.getRealmResultWithMarkerInfo(),
                 true,
                 new MarkerInfoRecyclerViewAdapter.OnMarkerIconClickListener() {
@@ -72,3 +73,7 @@ public class MarkersListFragment extends Fragment implements MarkersListView {
     }
 
 }
+
+// TODO: 09/05/17 create DataGenerator to generate random markers and work with data base when there will be 100, 1000, 10000 markers
+// TODO: 09/05/17 generated markers are inside of circle with center in (lat, long)
+// you need to be sure that app will work when there would be a lot of data
