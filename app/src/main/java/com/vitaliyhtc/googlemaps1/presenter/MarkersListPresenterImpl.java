@@ -1,12 +1,11 @@
 package com.vitaliyhtc.googlemaps1.presenter;
 
+import com.vitaliyhtc.googlemaps1.adapter.RecyclerViewAdapter;
 import com.vitaliyhtc.googlemaps1.data.MarkersListStorage;
-import com.vitaliyhtc.googlemaps1.data.MarkersListStorageImpl;
+import com.vitaliyhtc.googlemaps1.data.MarkersListRealmStorageImpl;
 import com.vitaliyhtc.googlemaps1.model.MarkerInfo;
 import com.vitaliyhtc.googlemaps1.view.BaseView;
 import com.vitaliyhtc.googlemaps1.view.MarkersListView;
-
-import io.realm.RealmResults;
 
 public class MarkersListPresenterImpl implements MarkersListPresenter {
 
@@ -20,7 +19,7 @@ public class MarkersListPresenterImpl implements MarkersListPresenter {
     @Override
     public void onAttachView(BaseView baseView) {
         mView = (MarkersListView) baseView;
-        mMarkersListStorage = new MarkersListStorageImpl();
+        mMarkersListStorage = new MarkersListRealmStorageImpl();
         mMarkersListStorage.initResources();
     }
 
@@ -31,7 +30,7 @@ public class MarkersListPresenterImpl implements MarkersListPresenter {
     }
 
     @Override
-    public RealmResults<MarkerInfo> getRealmResultWithMarkerInfo(){
-        return mMarkersListStorage.getRealmResultWithMarkerInfo();
+    public void subscribeForMarkersInfoData(RecyclerViewAdapter<MarkerInfo> adapter) {
+        mMarkersListStorage.subscribeForMarkersInfoData(adapter);
     }
 }

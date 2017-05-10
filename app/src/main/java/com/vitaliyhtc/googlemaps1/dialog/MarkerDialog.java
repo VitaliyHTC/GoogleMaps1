@@ -15,7 +15,7 @@ import android.widget.EditText;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.vitaliyhtc.googlemaps1.R;
-import com.vitaliyhtc.googlemaps1.adapter.MarkerItemsAdapter;
+import com.vitaliyhtc.googlemaps1.adapter.MarkerItemsAdapterImpl;
 import com.vitaliyhtc.googlemaps1.model.MarkerColorItem;
 import com.vitaliyhtc.googlemaps1.model.MarkerInfo;
 
@@ -101,8 +101,8 @@ public class MarkerDialog extends DialogFragment {
     // ! Need to be called after mSelectedMarkerHue value setting, or no correct marker will be preselected.
     private void initMarkerColorsRecyclerView() {
         initMarkerColorsList();
-        MarkerItemsAdapter adapter = new MarkerItemsAdapter(
-                new MarkerItemsAdapter.MarkerItemClickListener() {
+        MarkerItemsAdapterImpl adapter = new MarkerItemsAdapterImpl(
+                new MarkerItemsAdapterImpl.MarkerItemClickListener() {
                     @Override
                     public void onItemClick(int position) {
                         mSelectedMarkerHue = mMarkerColorItems.get(position).getMarkerHue();

@@ -11,7 +11,8 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.vitaliyhtc.googlemaps1.R;
-import com.vitaliyhtc.googlemaps1.adapter.MarkerInfoRecyclerViewAdapter;
+import com.vitaliyhtc.googlemaps1.adapter.MarkerInfoRecyclerViewAdapterImpl;
+import com.vitaliyhtc.googlemaps1.adapter.RecyclerViewAdapter;
 import com.vitaliyhtc.googlemaps1.model.MarkerInfo;
 import com.vitaliyhtc.googlemaps1.presenter.MarkersListPresenter;
 import com.vitaliyhtc.googlemaps1.presenter.MarkersListPresenterImpl;
@@ -26,7 +27,7 @@ public class MarkersListFragment extends Fragment implements MarkersListView {
 
     private MarkersListPresenter mMarkersListPresenter;
 
-    private MarkerInfoRecyclerViewAdapter mMarkerInfoRecyclerViewAdapter;
+    private MarkerInfoRecyclerViewAdapterImpl mMarkerInfoRecyclerViewAdapter;
 
     @Nullable
     @Override
@@ -53,12 +54,10 @@ public class MarkersListFragment extends Fragment implements MarkersListView {
         mMarkersListPresenter.onDetachView();
     }
 
+
     private void setUpRecyclerView() {
-        mMarkerInfoRecyclerViewAdapter = new MarkerInfoRecyclerViewAdapter(
-                // TODO: 09/05/17 don't do this. first of all call should be async. You need to init recycler view and later, when data will be available, display the list
-                mMarkersListPresenter.getRealmResultWithMarkerInfo(),
-                true,
-                new MarkerInfoRecyclerViewAdapter.OnMarkerIconClickListener() {
+        mMarkerInfoRecyclerViewAdapter = new MarkerInfoRecyclerViewAdapterImpl(
+                new MarkerInfoRecyclerViewAdapterImpl.OnMarkerIconClickListener() {
                     @Override
                     public void onItemClick(int position) {
                         MarkerInfo markerInfo = mMarkerInfoRecyclerViewAdapter.getItem(position);
@@ -70,6 +69,11 @@ public class MarkersListFragment extends Fragment implements MarkersListView {
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerView.setAdapter(mMarkerInfoRecyclerViewAdapter);
         recyclerView.setHasFixedSize(false);
+        fillMarkersData(mMarkerInfoRecyclerViewAdapter);
+    }
+
+    private void fillMarkersData(RecyclerViewAdapter<MarkerInfo> adapter){
+        mMarkersListPresenter.subscribeForMarkersInfoData(adapter);
     }
 
 }
@@ -77,3 +81,9 @@ public class MarkersListFragment extends Fragment implements MarkersListView {
 // TODO: 09/05/17 create DataGenerator to generate random markers and work with data base when there will be 100, 1000, 10000 markers
 // TODO: 09/05/17 generated markers are inside of circle with center in (lat, long)
 // you need to be sure that app will work when there would be a lot of data
+
+/**
+ * TODO:
+ * це завдання можна переробити на 2 build flavors, один realm другий dbflow, і реалізувати 2 різні реалізації для бази даних, які залежать від однієї абстракції
+ * бачу що за попередні 2 дні тільки 2 коміти є, не дуже добре так робити
+ */
