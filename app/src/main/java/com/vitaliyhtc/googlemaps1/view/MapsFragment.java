@@ -288,6 +288,13 @@ public class MapsFragment extends Fragment
                 mMapsPresenter.actionNewMarker(latLng);
             }
         });
+        mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+            @Override
+            public void onInfoWindowClick(Marker marker) {
+                mMapsPresenter.actionMarkerOptions(marker);
+            }
+        });
+        /*
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
@@ -295,6 +302,7 @@ public class MapsFragment extends Fragment
                 return false;
             }
         });
+        */
     }
 
     private Marker placeMarkerOnMapAndGet(MarkerInfo markerInfo) {
