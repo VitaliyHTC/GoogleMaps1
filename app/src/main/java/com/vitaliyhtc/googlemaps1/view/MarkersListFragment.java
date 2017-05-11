@@ -42,7 +42,6 @@ public class MarkersListFragment extends Fragment implements MarkersListView {
     Spinner mPlaceSpinner;
     @BindView(R.id.tv_dataGeneratorStatus)
     TextView mStatusTextView;
-    private boolean isGenerating;
     private String[] mCountSpinnerData = {
             "Generate 100 items",
             "Generate 1000 items",

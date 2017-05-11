@@ -179,6 +179,35 @@ public final class SelectionHelper {
         }
     }
 
+    /**
+     * for correct work you need to add next to your adapter:
+     *
+        // variable to store current selected position
+        private int mSelectedPosition = RecyclerView.NO_POSITION;
+     *
+        // Next to save current selected position
+        @Override
+        public void onHolderClick(RecyclerView.ViewHolder holder) {
+            int adapterPosition = holder.getAdapterPosition();
+            if (adapterPosition != RecyclerView.NO_POSITION && mClickListener != null) {
+                mSelectedPosition = adapterPosition;
+                mClickListener.onItemClick(adapterPosition);
+            }
+        }
+     *
+        //Next to change background when reuse holder for new item.
+        @Override
+        public void onBindViewHolder(ItemViewHolder holder, int position) {
+            holder.bind(mMarkers.get(position));
+            int color = Config.RV_SELECTED_OFF_BACKGROUND_COLOR;
+            if (position != RecyclerView.NO_POSITION && position == mSelectedPosition) {
+                color = Config.RV_SELECTED_ON_BACKGROUND_COLOR;
+            }
+            holder.setBackgroundColor(color);
+            mSelectionHelper.bindHolder(holder, position);
+        }
+     *
+     */
     private class ViewHolderSingleSelectionWrapper extends ViewHolderWrapper
             implements View.OnLongClickListener {
         private ViewHolderSingleSelectionWrapper(RecyclerView.ViewHolder holder) {

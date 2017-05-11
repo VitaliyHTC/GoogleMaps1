@@ -32,6 +32,7 @@ public class MarkerItemsAdapterImpl
     private float mInitialSelectedMarkerHue;
     private boolean isInitialMarkerSet;
 
+    private int mSelectedPosition = RecyclerView.NO_POSITION;
 
     public MarkerItemsAdapterImpl(MarkerItemClickListener markerItemClickListener, float hue) {
         mMarkerItemClickListener = markerItemClickListener;
@@ -64,6 +65,7 @@ public class MarkerItemsAdapterImpl
     public void onHolderClick(RecyclerView.ViewHolder holder) {
         int adapterPosition = holder.getAdapterPosition();
         if (adapterPosition != RecyclerView.NO_POSITION && mMarkerItemClickListener != null) {
+            mSelectedPosition = adapterPosition;
             mMarkerItemClickListener.onItemClick(adapterPosition);
         }
     }
@@ -93,6 +95,12 @@ public class MarkerItemsAdapterImpl
                 mSelectionHelper.setItemSelected(holder, true);
                 isInitialMarkerSet = true;
             }
+        } else {
+            int color = Config.RV_SELECTED_OFF_BACKGROUND_COLOR;
+            if (position != RecyclerView.NO_POSITION && position == mSelectedPosition) {
+                color = Config.RV_SELECTED_ON_BACKGROUND_COLOR;
+            }
+            holder.setBackgroundColor(color);
         }
     }
 

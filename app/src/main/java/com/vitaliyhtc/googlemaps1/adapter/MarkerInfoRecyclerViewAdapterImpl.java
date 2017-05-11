@@ -32,6 +32,8 @@ public class MarkerInfoRecyclerViewAdapterImpl
 
     private SelectionHelper mSelectionHelper;
 
+    private int mSelectedPosition = RecyclerView.NO_POSITION;
+
     public MarkerInfoRecyclerViewAdapterImpl(OnMarkerIconClickListener markerIconClickListener) {
         mOnMarkerIconClickListener = markerIconClickListener;
 
@@ -62,6 +64,7 @@ public class MarkerInfoRecyclerViewAdapterImpl
     public void onHolderClick(RecyclerView.ViewHolder holder) {
         int adapterPosition = holder.getAdapterPosition();
         if (adapterPosition != RecyclerView.NO_POSITION && mOnMarkerIconClickListener != null) {
+            mSelectedPosition = adapterPosition;
             mOnMarkerIconClickListener.onItemClick(adapterPosition);
         }
     }
@@ -83,6 +86,11 @@ public class MarkerInfoRecyclerViewAdapterImpl
     @Override
     public void onBindViewHolder(ItemViewHolder holder, int position) {
         holder.bind(mMarkers.get(position));
+        int color = Config.RV_SELECTED_OFF_BACKGROUND_COLOR;
+        if (position != RecyclerView.NO_POSITION && position == mSelectedPosition) {
+            color = Config.RV_SELECTED_ON_BACKGROUND_COLOR;
+        }
+        holder.setBackgroundColor(color);
         mSelectionHelper.bindHolder(holder, position);
     }
 
