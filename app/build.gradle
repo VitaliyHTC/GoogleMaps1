@@ -51,5 +51,6 @@ dependencies {
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.5.1'
     compile 'com.karumi:dexter:4.1.0'
     compile 'com.google.android.gms:play-services-maps:10.2.4'
+    compile 'com.google.maps.android:android-maps-utils:0.5'
     testCompile 'junit:junit:4.12'
 }

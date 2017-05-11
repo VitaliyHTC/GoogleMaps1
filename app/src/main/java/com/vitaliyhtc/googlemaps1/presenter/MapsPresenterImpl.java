@@ -1,12 +1,12 @@
 package com.vitaliyhtc.googlemaps1.presenter;
 
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.vitaliyhtc.googlemaps1.data.MarkerInfoAllMarkersResultListener;
 import com.vitaliyhtc.googlemaps1.data.MarkerInfoRealmStorageImpl;
 import com.vitaliyhtc.googlemaps1.data.MarkerInfoRetrievedListener;
 import com.vitaliyhtc.googlemaps1.data.MarkerInfoStorage;
 import com.vitaliyhtc.googlemaps1.model.MarkerInfo;
+import com.vitaliyhtc.googlemaps1.model.MarkerInfoItem;
 import com.vitaliyhtc.googlemaps1.view.BaseView;
 import com.vitaliyhtc.googlemaps1.view.MapsView;
 
@@ -80,13 +80,13 @@ public class MapsPresenterImpl
     }
 
     @Override
-    public void actionMarkerOptions(Marker marker) {
-        mMapsView.displayMarkerInfoAndOptionsDialog(marker);
+    public void actionMarkerOptions(MarkerInfoItem markerInfoItem) {
+        mMapsView.displayMarkerInfoAndOptionsDialog(markerInfoItem);
     }
 
     @Override
-    public void actionEditMarker(Marker marker) {
-        mMarkerInfoStorage.getMarkerById((String) marker.getTag(),
+    public void actionEditMarker(MarkerInfoItem markerInfoItem) {
+        mMarkerInfoStorage.getMarkerById(markerInfoItem.getMarkerInfo().getId(),
                 new MarkerInfoRetrievedListener() {
                     @Override
                     public void onMarkerRetrieved(MarkerInfo markerInfo) {
@@ -103,9 +103,9 @@ public class MapsPresenterImpl
     }
 
     @Override
-    public void actionDeleteMarker(Marker marker) {
-        mMarkerInfoStorage.deleteMarkerById((String) marker.getTag());
-        mMapsView.deleteMarkerUi(marker);
+    public void actionDeleteMarker(MarkerInfoItem markerInfoItem) {
+        mMarkerInfoStorage.deleteMarkerById(markerInfoItem.getMarkerInfo().getId());
+        mMapsView.deleteMarkerUi(markerInfoItem);
     }
 
 }

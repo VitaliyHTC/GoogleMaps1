@@ -15,10 +15,8 @@ import android.widget.Toast;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.maps.android.clustering.ClusterManager;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.PermissionToken;
 import com.karumi.dexter.listener.PermissionDeniedResponse;
@@ -30,8 +28,10 @@ import com.vitaliyhtc.googlemaps1.dialog.MapTypeDialog;
 import com.vitaliyhtc.googlemaps1.dialog.MarkerDialog;
 import com.vitaliyhtc.googlemaps1.dialog.MarkerInfoOptionsDialog;
 import com.vitaliyhtc.googlemaps1.model.MarkerInfo;
+import com.vitaliyhtc.googlemaps1.model.MarkerInfoItem;
 import com.vitaliyhtc.googlemaps1.presenter.MapsPresenter;
 import com.vitaliyhtc.googlemaps1.presenter.MapsPresenterImpl;
+import com.vitaliyhtc.googlemaps1.render.IconRender;
 import com.vitaliyhtc.googlemaps1.util.MapStateUtils;
 
 import java.util.HashMap;
@@ -47,8 +47,9 @@ public class MapsFragment extends Fragment
     private MapsPresenter mMapsPresenter;
 
     private GoogleMap mMap;
+    private ClusterManager<MarkerInfoItem> mClusterManager;
 
-    private Map<String, Marker> mMarkers;
+    private Map<String, MarkerInfoItem> mMarkerItems;
 
     @Nullable
     @Override
@@ -76,7 +77,7 @@ public class MapsFragment extends Fragment
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        mMarkers = new HashMap<>();
+        mMarkerItems = new HashMap<>();
 
         mMapsPresenter = new MapsPresenterImpl();
         mMapsPresenter.onAttachView(MapsFragment.this);
@@ -103,6 +104,18 @@ public class MapsFragment extends Fragment
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+
+        mClusterManager = new ClusterManager<>(getContext(), googleMap);
+        mClusterManager.setRenderer(new IconRender(getContext(), googleMap, mClusterManager));
+        googleMap.setOnCameraIdleListener(mClusterManager);
+        googleMap.setOnMarkerClickListener(mClusterManager);
+        mClusterManager.setOnClusterItemClickListener(new ClusterManager.OnClusterItemClickListener<MarkerInfoItem>() {
+            @Override
+            public boolean onClusterItemClick(MarkerInfoItem markerInfoItem) {
+                mMapsPresenter.actionMarkerOptions(markerInfoItem);
+                return false;
+            }
+        });
 
         initUiSettings();
         MapStateUtils.restoreCameraPositionOnMap(getContext(), mMap);
@@ -144,8 +157,8 @@ public class MapsFragment extends Fragment
 
     @Override
     public void placeNewMarkerOnMap(MarkerInfo markerInfo) {
-        Marker marker = placeMarkerOnMapAndGet(markerInfo);
-        mMarkers.put((String) marker.getTag(), marker);
+        MarkerInfoItem marker = placeMarkerOnMapAndGet(markerInfo);
+        mMarkerItems.put(marker.getMarkerInfo().getId(), marker);
     }
 
     @Override
@@ -162,18 +175,18 @@ public class MapsFragment extends Fragment
     }
 
     @Override
-    public void displayMarkerInfoAndOptionsDialog(Marker marker) {
+    public void displayMarkerInfoAndOptionsDialog(MarkerInfoItem markerInfoItem) {
         MarkerInfoOptionsDialog dialog = new MarkerInfoOptionsDialog();
-        dialog.setMarker(marker);
+        dialog.setMarker(markerInfoItem);
         dialog.setCallback(new MarkerInfoOptionsDialog.MarkerInfoOptionsDialogCallback() {
             @Override
-            public void onMarkerEdit(Marker marker) {
-                mMapsPresenter.actionEditMarker(marker);
+            public void onMarkerEdit(MarkerInfoItem markerInfoItem) {
+                mMapsPresenter.actionEditMarker(markerInfoItem);
             }
 
             @Override
-            public void onMarkerDelete(Marker marker) {
-                mMapsPresenter.actionDeleteMarker(marker);
+            public void onMarkerDelete(MarkerInfoItem markerInfoItem) {
+                mMapsPresenter.actionDeleteMarker(markerInfoItem);
             }
         });
         dialog.show(getChildFragmentManager(), "MarkerInfoOptionsDialog");
@@ -194,17 +207,17 @@ public class MapsFragment extends Fragment
 
     @Override
     public void updateMarkerUi(MarkerInfo markerInfo) {
-        if (mMarkers.containsKey(markerInfo.getId())) {
-            mMarkers.get(markerInfo.getId()).remove();
-            mMarkers.remove(markerInfo.getId());
+        if (mMarkerItems.containsKey(markerInfo.getId())) {
+            mClusterManager.removeItem(mMarkerItems.get(markerInfo.getId()));
+            mMarkerItems.remove(markerInfo.getId());
         }
         placeNewMarkerOnMap(markerInfo);
     }
 
     @Override
-    public void deleteMarkerUi(Marker marker) {
-        mMarkers.remove((String) marker.getTag());
-        marker.remove();
+    public void deleteMarkerUi(MarkerInfoItem markerInfoItem) {
+        mClusterManager.removeItem(mMarkerItems.get(markerInfoItem.getMarkerInfo().getId()));
+        mMarkerItems.remove(markerInfoItem.getMarkerInfo().getId());
     }
 
 
@@ -288,31 +301,12 @@ public class MapsFragment extends Fragment
                 mMapsPresenter.actionNewMarker(latLng);
             }
         });
-        mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
-            @Override
-            public void onInfoWindowClick(Marker marker) {
-                mMapsPresenter.actionMarkerOptions(marker);
-            }
-        });
-        /*
-        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-            @Override
-            public boolean onMarkerClick(Marker marker) {
-                mMapsPresenter.actionMarkerOptions(marker);
-                return false;
-            }
-        });
-        */
     }
 
-    private Marker placeMarkerOnMapAndGet(MarkerInfo markerInfo) {
-        MarkerOptions markerOptions = new MarkerOptions()
-                .position(new LatLng(markerInfo.getLatitude(), markerInfo.getLongitude()))
-                .title(markerInfo.getTitle())
-                .icon(BitmapDescriptorFactory.defaultMarker(markerInfo.getIconHue()));
-        Marker marker1 = mMap.addMarker(markerOptions);
-        marker1.setTag(markerInfo.getId());
-        return marker1;
+    private MarkerInfoItem placeMarkerOnMapAndGet(MarkerInfo markerInfo) {
+        MarkerInfoItem markerInfoItem = new MarkerInfoItem(markerInfo);
+        mClusterManager.addItem(markerInfoItem);
+        return markerInfoItem;
     }
 
     private void showToastShort(String message) {

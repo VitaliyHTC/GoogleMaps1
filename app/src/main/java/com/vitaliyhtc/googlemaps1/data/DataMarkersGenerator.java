@@ -3,6 +3,7 @@ package com.vitaliyhtc.googlemaps1.data;
 import android.os.AsyncTask;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.google.maps.android.SphericalUtil;
 import com.vitaliyhtc.googlemaps1.model.MarkerInfo;
 
 import java.util.ArrayList;
@@ -62,8 +63,8 @@ public class DataMarkersGenerator {
         mDeltaLng = 1;
         LatLng yLatLng = new LatLng(mCenterLatLng.latitude + mDeltaLat, mCenterLatLng.longitude);
         LatLng xLatLng = new LatLng(mCenterLatLng.latitude, mCenterLatLng.longitude + mDeltaLng);
-        double deltaY = computeDistanceBetween(yLatLng, mCenterLatLng);
-        double deltaX = computeDistanceBetween(xLatLng, mCenterLatLng);
+        double deltaY = SphericalUtil.computeDistanceBetween(yLatLng, mCenterLatLng);
+        double deltaX = SphericalUtil.computeDistanceBetween(xLatLng, mCenterLatLng);
         mDeltaLat = 1 * mRadiusInMeters / deltaY;
         mDeltaLng = 1 * mRadiusInMeters / deltaX;
     }
@@ -74,7 +75,7 @@ public class DataMarkersGenerator {
             double lat = mCenterLatLng.latitude + randomDoubleWithRange(-mDeltaLat, mDeltaLat);
             double lng = mCenterLatLng.longitude + randomDoubleWithRange(-mDeltaLng, mDeltaLng);
             LatLng latLng = new LatLng(lat, lng);
-            if (computeDistanceBetween(latLng, mCenterLatLng) <= mRadiusInMeters) {
+            if (SphericalUtil.computeDistanceBetween(latLng, mCenterLatLng) <= mRadiusInMeters) {
                 MarkerInfo markerInfo = new MarkerInfo();
 
                 markerInfo.setId(UUID.randomUUID().toString());
@@ -95,59 +96,6 @@ public class DataMarkersGenerator {
         mListener.onMarkersGeneratedSuccessful();
     }
 
-
-    // Next 3 methods taken from:
-    // https://github.com/googlemaps/android-maps-utils/blob/master/library/src/com/google/maps/android/SphericalUtil.java
-
-    /**
-     * Returns the distance between two LatLngs, in meters.
-     */
-    private static double computeDistanceBetween(LatLng from, LatLng to) {
-        return computeAngleBetween(from, to) * 6371009.0D;
-    }
-
-    /**
-     * Returns the angle between two LatLngs, in radians. This is the same as the distance
-     * on the unit sphere.
-     */
-    private static double computeAngleBetween(LatLng from, LatLng to) {
-        return distanceRadians(Math.toRadians(from.latitude), Math.toRadians(from.longitude), Math.toRadians(to.latitude), Math.toRadians(to.longitude));
-    }
-
-    /**
-     * Returns distance on the unit sphere; the arguments are in radians.
-     */
-    private static double distanceRadians(double lat1, double lng1, double lat2, double lng2) {
-        return arcHav(havDistance(lat1, lat2, lng1 - lng2));
-    }
-
-    // Next 3 methods taken from:
-    // https://github.com/googlemaps/android-maps-utils/blob/master/library/src/com/google/maps/android/MathUtil.java
-
-    /**
-     * Computes inverse haversine. Has good numerical stability around 0.
-     * arcHav(x) == acos(1 - 2 * x) == 2 * asin(sqrt(x)).
-     * The argument must be in [0, 1], and the result is positive.
-     */
-    private static double arcHav(double x) {
-        return 2.0D * Math.asin(Math.sqrt(x));
-    }
-
-    /**
-     * Returns hav() of distance from (lat1, lng1) to (lat2, lng2) on the unit sphere.
-     */
-    private static double havDistance(double lat1, double lat2, double dLng) {
-        return hav(lat1 - lat2) + hav(dLng) * Math.cos(lat1) * Math.cos(lat2);
-    }
-
-    /**
-     * Returns haversine(angle-in-radians).
-     * hav(x) == (1 - cos(x)) / 2 == sin(x / 2)^2.
-     */
-    private static double hav(double x) {
-        double sinHalf = Math.sin(x * 0.5D);
-        return sinHalf * sinHalf;
-    }
 
     //other helper methods
     private double randomDoubleWithRange(double min, double max) {

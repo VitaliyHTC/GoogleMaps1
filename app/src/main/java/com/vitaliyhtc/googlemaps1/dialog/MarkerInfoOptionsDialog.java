@@ -10,8 +10,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
 
-import com.google.android.gms.maps.model.Marker;
 import com.vitaliyhtc.googlemaps1.R;
+import com.vitaliyhtc.googlemaps1.model.MarkerInfoItem;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -21,7 +21,7 @@ public class MarkerInfoOptionsDialog extends DialogFragment {
     @BindView(R.id.marker_title)
     TextView mTitleTextView;
 
-    private Marker mMarker;
+    private MarkerInfoItem mMarkerInfoItem;
     private MarkerInfoOptionsDialogCallback callback;
 
     @NonNull
@@ -56,8 +56,8 @@ public class MarkerInfoOptionsDialog extends DialogFragment {
         return builder.create();
     }
 
-    public void setMarker(Marker marker) {
-        mMarker = marker;
+    public void setMarker(MarkerInfoItem markerInfoItem) {
+        mMarkerInfoItem = markerInfoItem;
     }
 
     public void setCallback(MarkerInfoOptionsDialogCallback callback) {
@@ -66,25 +66,24 @@ public class MarkerInfoOptionsDialog extends DialogFragment {
 
     private void onClickEdit() {
         if (callback != null) {
-            callback.onMarkerEdit(mMarker);
+            callback.onMarkerEdit(mMarkerInfoItem);
         }
     }
 
     private void onClickDelete() {
         if (callback != null) {
-            callback.onMarkerDelete(mMarker);
+            callback.onMarkerDelete(mMarkerInfoItem);
         }
     }
 
     private void showMarkerInfo() {
-        if (mMarker != null) {
-            mTitleTextView.setText(mMarker.getTitle());
+        if (mMarkerInfoItem != null) {
+            mTitleTextView.setText(mMarkerInfoItem.getTitle());
         }
     }
 
     public interface MarkerInfoOptionsDialogCallback {
-        void onMarkerEdit(Marker marker);
-
-        void onMarkerDelete(Marker marker);
+        void onMarkerEdit(MarkerInfoItem markerInfoItem);
+        void onMarkerDelete(MarkerInfoItem markerInfoItem);
     }
 }

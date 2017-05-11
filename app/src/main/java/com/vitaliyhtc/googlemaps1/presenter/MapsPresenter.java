@@ -1,8 +1,8 @@
 package com.vitaliyhtc.googlemaps1.presenter;
 
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.vitaliyhtc.googlemaps1.model.MarkerInfo;
+import com.vitaliyhtc.googlemaps1.model.MarkerInfoItem;
 
 public interface MapsPresenter extends BasePresenter {
     void onMapTypeSwitchClick();
@@ -10,8 +10,8 @@ public interface MapsPresenter extends BasePresenter {
     void getAllMarkers();
     void actionNewMarker(LatLng latLng);
     void onNewMarkerDialogSuccess(MarkerInfo markerInfo);
-    void actionMarkerOptions(Marker marker);
-    void actionEditMarker(Marker marker);
-    void actionDeleteMarker(Marker marker);
+    void actionMarkerOptions(MarkerInfoItem markerInfoItem);
+    void actionEditMarker(MarkerInfoItem markerInfoItem);
+    void actionDeleteMarker(MarkerInfoItem markerInfoItem);
     void onEditMarkerDialogSuccess(MarkerInfo markerInfo);
 }
