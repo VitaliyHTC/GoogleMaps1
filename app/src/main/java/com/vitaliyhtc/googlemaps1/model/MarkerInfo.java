@@ -8,6 +8,20 @@ import io.realm.annotations.PrimaryKey;
 
 public class MarkerInfo extends RealmObject {
 
+    public static final float[] hues = {
+            BitmapDescriptorFactory.HUE_RED,
+            BitmapDescriptorFactory.HUE_ORANGE,
+            BitmapDescriptorFactory.HUE_YELLOW,
+            BitmapDescriptorFactory.HUE_GREEN,
+            BitmapDescriptorFactory.HUE_CYAN,
+            BitmapDescriptorFactory.HUE_AZURE,
+            BitmapDescriptorFactory.HUE_BLUE,
+            BitmapDescriptorFactory.HUE_VIOLET,
+            BitmapDescriptorFactory.HUE_MAGENTA,
+            BitmapDescriptorFactory.HUE_ROSE
+    };
+    public static final int huesSize = hues.length;
+
     @PrimaryKey
     private String id;
     private double latitude;

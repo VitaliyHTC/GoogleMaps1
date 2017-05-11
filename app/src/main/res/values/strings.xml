@@ -41,5 +41,7 @@
     <string name="map_type_satellite">Satellite</string>
     <string name="map_type_terrain">Terrain</string>
     <string name="new_marker_dialog_color_marker">Color marker</string>
+    <string name="start_markers_generation">Start markers generation</string>
+    <string name="delete_all_markers_from_db">delete all markers from DB</string>
 
 </resources>

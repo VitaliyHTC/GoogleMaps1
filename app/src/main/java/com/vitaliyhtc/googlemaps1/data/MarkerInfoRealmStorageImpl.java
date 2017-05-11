@@ -1,7 +1,12 @@
 package com.vitaliyhtc.googlemaps1.data;
 
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+
 import com.vitaliyhtc.googlemaps1.model.MarkerInfo;
 import com.vitaliyhtc.googlemaps1.model.MarkerWrap;
+
+import java.util.List;
 
 import io.realm.OrderedCollectionChangeSet;
 import io.realm.OrderedRealmCollectionChangeListener;
@@ -38,6 +43,16 @@ public class MarkerInfoRealmStorageImpl implements MarkerInfoStorage {
             @Override
             public void execute(Realm bgRealm) {
                 bgRealm.copyToRealm(markerInfo);
+            }
+        });
+    }
+
+    @Override
+    public void saveMarkersListSynchronously(final List<MarkerInfo> markers) {
+        mRealmInstance.executeTransaction(new Realm.Transaction() {
+            @Override
+            public void execute(Realm bgRealm) {
+                bgRealm.copyToRealm(markers);
             }
         });
     }
@@ -103,7 +118,7 @@ public class MarkerInfoRealmStorageImpl implements MarkerInfoStorage {
     }
 
     @Override
-    public void getAllMarkersAsync(final MarkerInfoAllMarkersResultListener listener) {
+    public void getAllMarkersAsync(@NonNull final MarkerInfoAllMarkersResultListener listener) {
         OrderedRealmCollectionChangeListener<RealmResults<MarkerInfo>> allMarkersCallback = new OrderedRealmCollectionChangeListener<RealmResults<MarkerInfo>>() {
             @Override
             public void onChange(RealmResults<MarkerInfo> results, OrderedCollectionChangeSet changeSet) {
@@ -117,5 +132,23 @@ public class MarkerInfoRealmStorageImpl implements MarkerInfoStorage {
         };
         mAllMarkersResult = mRealmInstance.where(MarkerInfo.class).findAllAsync();
         mAllMarkersResult.addChangeListener(allMarkersCallback);
+    }
+
+    @Override
+    public void deleteAllMarkers(@Nullable final MarkerInfoAllMarkersDeletedListener listener) {
+        mRealmInstance.executeTransactionAsync(
+                new Realm.Transaction() {
+                    @Override
+                    public void execute(Realm realm) {
+                        realm.where(MarkerInfo.class).findAll().deleteAllFromRealm();
+                    }
+                }, new Realm.Transaction.OnSuccess() {
+                    @Override
+                    public void onSuccess() {
+                        if (listener != null) {
+                            listener.onAllMarkersDeleted();
+                        }
+                    }
+                });
     }
 }

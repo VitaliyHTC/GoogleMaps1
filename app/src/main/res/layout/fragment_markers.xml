@@ -12,6 +12,62 @@
         android:layout_height="match_parent"
         android:scrollbars="vertical"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:layout_above="@+id/dataGeneratorControls"
         />
+
+    <RelativeLayout
+        android:id="@+id/dataGeneratorControls"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:layout_alignParentBottom="true">
+
+        <Spinner
+            android:id="@+id/spn_count"
+            android:layout_width="184dp"
+            android:layout_height="wrap_content"
+            >
+        </Spinner>
+
+        <Spinner
+            android:id="@+id/spn_place"
+            android:layout_width="128dp"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@id/spn_count"
+            android:layout_toRightOf="@id/spn_count"
+            >
+        </Spinner>
+
+        <ImageView
+            android:id="@+id/iv_action_start_generation"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_alignParentBottom="true"
+            android:src="@drawable/ic_play_arrow_green_48dp"
+            android:contentDescription="@string/start_markers_generation"
+            />
+
+        <ImageView
+            android:id="@+id/iv_action_delete_all"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_alignParentBottom="true"
+            android:layout_toEndOf="@+id/iv_action_start_generation"
+            android:layout_toRightOf="@id/iv_action_start_generation"
+            android:src="@drawable/ic_delete_gray_48dp"
+            android:contentDescription="@string/delete_all_markers_from_db"
+            />
+
+        <TextView
+            android:id="@+id/tv_dataGeneratorStatus"
+            android:layout_width="match_parent"
+            android:layout_height="24dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:layout_toEndOf="@+id/iv_action_delete_all"
+            android:layout_toRightOf="@+id/iv_action_delete_all"
+            />
+
+    </RelativeLayout>
 
 </RelativeLayout>
