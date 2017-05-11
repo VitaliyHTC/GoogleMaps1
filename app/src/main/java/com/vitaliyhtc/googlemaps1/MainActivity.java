@@ -6,7 +6,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 
 import com.vitaliyhtc.googlemaps1.adapter.ViewPagerAdapter;
-import com.vitaliyhtc.googlemaps1.lib.SlidingTabLayout;
+import com.vitaliyhtc.googlemaps1.view.lib.SlidingTabLayout;
 
 public class MainActivity extends AppCompatActivity {
 

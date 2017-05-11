@@ -2,7 +2,7 @@ package com.vitaliyhtc.googlemaps1.presenter;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.vitaliyhtc.googlemaps1.data.MarkerInfoAllMarkersResultListener;
-import com.vitaliyhtc.googlemaps1.data.MarkerInfoRealmStorageImpl;
+import com.vitaliyhtc.googlemaps1.data.realm.MarkerInfoRealmStorageImpl;
 import com.vitaliyhtc.googlemaps1.data.MarkerInfoRetrievedListener;
 import com.vitaliyhtc.googlemaps1.data.MarkerInfoStorage;
 import com.vitaliyhtc.googlemaps1.model.MarkerInfo;

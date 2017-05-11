@@ -1,8 +1,12 @@
-package com.vitaliyhtc.googlemaps1.data;
+package com.vitaliyhtc.googlemaps1.data.realm;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.vitaliyhtc.googlemaps1.data.MarkerInfoAllMarkersDeletedListener;
+import com.vitaliyhtc.googlemaps1.data.MarkerInfoAllMarkersResultListener;
+import com.vitaliyhtc.googlemaps1.data.MarkerInfoRetrievedListener;
+import com.vitaliyhtc.googlemaps1.data.MarkerInfoStorage;
 import com.vitaliyhtc.googlemaps1.model.MarkerInfo;
 import com.vitaliyhtc.googlemaps1.model.MarkerWrap;
 

@@ -1,4 +1,4 @@
-package com.vitaliyhtc.googlemaps1.render;
+package com.vitaliyhtc.googlemaps1.view;
 
 import android.content.Context;
 

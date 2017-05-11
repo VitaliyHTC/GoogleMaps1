@@ -1,6 +1,7 @@
-package com.vitaliyhtc.googlemaps1.data;
+package com.vitaliyhtc.googlemaps1.data.realm;
 
 import com.vitaliyhtc.googlemaps1.adapter.RecyclerViewAdapter;
+import com.vitaliyhtc.googlemaps1.data.MarkersListStorage;
 import com.vitaliyhtc.googlemaps1.model.MarkerInfo;
 
 import io.realm.Realm;

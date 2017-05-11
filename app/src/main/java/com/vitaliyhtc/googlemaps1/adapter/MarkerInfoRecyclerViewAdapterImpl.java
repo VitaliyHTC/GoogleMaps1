@@ -11,9 +11,9 @@ import android.widget.TextView;
 import com.vitaliyhtc.googlemaps1.Config;
 import com.vitaliyhtc.googlemaps1.R;
 import com.vitaliyhtc.googlemaps1.model.MarkerInfo;
-import com.vitaliyhtc.googlemaps1.recyclerview.HolderClickObserver;
-import com.vitaliyhtc.googlemaps1.recyclerview.SelectionHelper;
-import com.vitaliyhtc.googlemaps1.recyclerview.SelectionObserver;
+import com.vitaliyhtc.googlemaps1.adapter.recyclerview.HolderClickObserver;
+import com.vitaliyhtc.googlemaps1.adapter.recyclerview.SelectionHelper;
+import com.vitaliyhtc.googlemaps1.adapter.recyclerview.SelectionObserver;
 
 import java.util.List;
 

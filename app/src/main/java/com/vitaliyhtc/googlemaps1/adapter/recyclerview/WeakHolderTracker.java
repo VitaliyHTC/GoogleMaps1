@@ -1,4 +1,4 @@
-package com.vitaliyhtc.googlemaps1.recyclerview;
+package com.vitaliyhtc.googlemaps1.adapter.recyclerview;
 
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;

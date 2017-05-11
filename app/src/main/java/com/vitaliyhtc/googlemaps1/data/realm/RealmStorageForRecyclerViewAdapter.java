@@ -1,4 +1,4 @@
-package com.vitaliyhtc.googlemaps1.data;
+package com.vitaliyhtc.googlemaps1.data.realm;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;

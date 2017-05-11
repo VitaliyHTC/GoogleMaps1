@@ -1,4 +1,4 @@
-package com.vitaliyhtc.googlemaps1.recyclerview;
+package com.vitaliyhtc.googlemaps1.adapter.recyclerview;
 
 import android.database.Observable;
 import android.support.annotation.NonNull;

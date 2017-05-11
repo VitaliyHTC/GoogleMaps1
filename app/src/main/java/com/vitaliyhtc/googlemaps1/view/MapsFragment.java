@@ -24,14 +24,13 @@ import com.karumi.dexter.listener.PermissionGrantedResponse;
 import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.single.PermissionListener;
 import com.vitaliyhtc.googlemaps1.R;
-import com.vitaliyhtc.googlemaps1.dialog.MapTypeDialog;
-import com.vitaliyhtc.googlemaps1.dialog.MarkerDialog;
-import com.vitaliyhtc.googlemaps1.dialog.MarkerInfoOptionsDialog;
+import com.vitaliyhtc.googlemaps1.view.dialog.MapTypeDialog;
+import com.vitaliyhtc.googlemaps1.view.dialog.MarkerDialog;
+import com.vitaliyhtc.googlemaps1.view.dialog.MarkerInfoOptionsDialog;
 import com.vitaliyhtc.googlemaps1.model.MarkerInfo;
 import com.vitaliyhtc.googlemaps1.model.MarkerInfoItem;
 import com.vitaliyhtc.googlemaps1.presenter.MapsPresenter;
 import com.vitaliyhtc.googlemaps1.presenter.MapsPresenterImpl;
-import com.vitaliyhtc.googlemaps1.render.IconRender;
 import com.vitaliyhtc.googlemaps1.util.MapStateUtils;
 
 import java.util.HashMap;

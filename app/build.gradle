@@ -2,9 +2,8 @@ apply plugin: 'com.android.application'
 apply plugin: 'realm-android'
 
 repositories {
-    maven {
-        url 'http://oss.jfrog.org/artifactory/oss-snapshot-local'
-    }
+    maven { url 'http://oss.jfrog.org/artifactory/oss-snapshot-local' }
+    maven { url "https://www.jitpack.io" }
 }
 
 android {
@@ -39,6 +38,9 @@ android {
     }
 }
 
+
+def dbflow_version = "4.0.0-beta7"
+
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
@@ -52,5 +54,11 @@ dependencies {
     compile 'com.karumi:dexter:4.1.0'
     compile 'com.google.android.gms:play-services-maps:10.2.4'
     compile 'com.google.maps.android:android-maps-utils:0.5'
+
+    annotationProcessor "com.github.Raizlabs.DBFlow:dbflow-processor:${dbflow_version}"
+    compile "com.github.Raizlabs.DBFlow:dbflow-core:${dbflow_version}"
+    compile "com.github.Raizlabs.DBFlow:dbflow:${dbflow_version}"
+    compile "com.github.Raizlabs.DBFlow:dbflow-rx2:${dbflow_version}"
+
     testCompile 'junit:junit:4.12'
 }

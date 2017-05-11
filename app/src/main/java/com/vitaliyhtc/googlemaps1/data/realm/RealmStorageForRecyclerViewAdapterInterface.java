@@ -1,4 +1,4 @@
-package com.vitaliyhtc.googlemaps1.data;
+package com.vitaliyhtc.googlemaps1.data.realm;
 
 public interface RealmStorageForRecyclerViewAdapterInterface {
     void onAttachedToRecyclerView();

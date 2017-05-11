@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.vitaliyhtc.googlemaps1.lib;
+package com.vitaliyhtc.googlemaps1.view.lib;
 
 import android.content.Context;
 import android.graphics.Canvas;
