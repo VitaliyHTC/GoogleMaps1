@@ -22,17 +22,19 @@ public class MarkerInfoDBFlowStorageImpl implements MarkerInfoStorage {
 
     @Override
     public void saveMarker(MarkerInfo markerInfo) {
-
+        markerInfo.save();
     }
 
     @Override
     public void saveMarkersListSynchronously(List<MarkerInfo> markers) {
-
+        for (MarkerInfo marker : markers) {
+            marker.save();
+        }
     }
 
     @Override
     public void updateMarker(MarkerInfo markerInfo) {
-
+        markerInfo.update();
     }
 
     @Override
@@ -42,7 +44,7 @@ public class MarkerInfoDBFlowStorageImpl implements MarkerInfoStorage {
 
     @Override
     public void deleteMarkerById(String markerId) {
-
+        //SQLite.delete(MarkerInfo.class).where(MarkerInfo_Table.id.is(markerId)).async().execute();
     }
 
     @Override
