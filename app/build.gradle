@@ -36,6 +36,14 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    productFlavors {
+        realm {
+            versionName defaultConfig.versionName + "-realm"
+        }
+        dbflow {
+            versionName defaultConfig.versionName + "-dbflow"
+        }
+    }
 }
 
 
