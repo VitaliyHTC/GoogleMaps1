@@ -1,6 +1,6 @@
 package com.vitaliyhtc.googlemaps1.data.realm;
 
-public interface RealmStorageForRecyclerViewAdapterInterface {
+public interface DataStorageForRecyclerViewAdapterInterface {
     void onAttachedToRecyclerView();
     void onDetachedFromRecyclerView();
     long getItemId(final int index);

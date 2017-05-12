@@ -1,8 +1,8 @@
 package com.vitaliyhtc.googlemaps1.presenter;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.vitaliyhtc.googlemaps1.data.DataStorageUtils;
 import com.vitaliyhtc.googlemaps1.data.MarkerInfoAllMarkersResultListener;
-import com.vitaliyhtc.googlemaps1.data.realm.MarkerInfoRealmStorageImpl;
 import com.vitaliyhtc.googlemaps1.data.MarkerInfoRetrievedListener;
 import com.vitaliyhtc.googlemaps1.data.MarkerInfoStorage;
 import com.vitaliyhtc.googlemaps1.model.MarkerInfo;
@@ -27,7 +27,7 @@ public class MapsPresenterImpl
     @Override
     public void onAttachView(BaseView baseView) {
         mMapsView = (MapsView) baseView;
-        mMarkerInfoStorage = new MarkerInfoRealmStorageImpl();
+        mMarkerInfoStorage = DataStorageUtils.getMarkerInfoStorageInstance();
         mMarkerInfoStorage.initResources();
     }
 

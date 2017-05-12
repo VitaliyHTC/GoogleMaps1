@@ -31,7 +31,7 @@ import io.realm.RealmResults;
  * @param <T> type of {@link RealmModel} stored in the adapter.
  */
 public class RealmStorageForRecyclerViewAdapter<T extends RealmModel>
-        implements RealmStorageForRecyclerViewAdapterInterface {
+        implements DataStorageForRecyclerViewAdapterInterface {
 
     private final boolean hasAutoUpdates;
     private final OrderedRealmCollectionChangeListener listener;

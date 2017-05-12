@@ -20,8 +20,8 @@ import com.vitaliyhtc.googlemaps1.R;
 import com.vitaliyhtc.googlemaps1.adapter.MarkerInfoRecyclerViewAdapterImpl;
 import com.vitaliyhtc.googlemaps1.adapter.RecyclerViewAdapter;
 import com.vitaliyhtc.googlemaps1.data.DataMarkersGenerator;
+import com.vitaliyhtc.googlemaps1.data.DataStorageUtils;
 import com.vitaliyhtc.googlemaps1.data.MarkerInfoAllMarkersDeletedListener;
-import com.vitaliyhtc.googlemaps1.data.realm.MarkerInfoRealmStorageImpl;
 import com.vitaliyhtc.googlemaps1.data.MarkerInfoStorage;
 import com.vitaliyhtc.googlemaps1.model.MarkerInfo;
 import com.vitaliyhtc.googlemaps1.presenter.MarkersListPresenter;
@@ -84,7 +84,7 @@ public class MarkersListFragment extends Fragment implements MarkersListView {
         mMarkersListPresenter = new MarkersListPresenterImpl();
         mMarkersListPresenter.onAttachView(MarkersListFragment.this);
 
-        mMarkerInfoStorage = new MarkerInfoRealmStorageImpl();
+        mMarkerInfoStorage = DataStorageUtils.getMarkerInfoStorageInstance();
         mMarkerInfoStorage.initResources();
 
         setUpRecyclerView();

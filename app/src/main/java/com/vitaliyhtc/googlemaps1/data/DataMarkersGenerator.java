@@ -4,7 +4,6 @@ import android.os.AsyncTask;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.android.SphericalUtil;
-import com.vitaliyhtc.googlemaps1.data.realm.MarkerInfoRealmStorageImpl;
 import com.vitaliyhtc.googlemaps1.model.MarkerInfo;
 
 import java.util.ArrayList;
@@ -43,16 +42,17 @@ public class DataMarkersGenerator {
         mListener = listener;
     }
 
-    public void generateMarkers(){
-        if(!isInProgress){
+    public void generateMarkers() {
+        if (!isInProgress) {
             isInProgress = true;
             MarkersGenerationAsyncTask task = new MarkersGenerationAsyncTask();
             task.execute();
         }
     }
 
+
     private void generateMarkers1() {
-        mMarkerInfoStorage = new MarkerInfoRealmStorageImpl();
+        mMarkerInfoStorage = DataStorageUtils.getMarkerInfoStorageInstance();
         mMarkerInfoStorage.initResources();
         calculateDeltas();
         startMarkersGeneration();
@@ -92,7 +92,7 @@ public class DataMarkersGenerator {
         mMarkerInfoStorage.saveMarkersListSynchronously(markers);
     }
 
-    private void onMarkersGenerated(){
+    private void onMarkersGenerated() {
         isInProgress = false;
         mListener.onMarkersGeneratedSuccessful();
     }
