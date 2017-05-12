@@ -217,6 +217,7 @@ public class MapsFragment extends Fragment
     public void deleteMarkerUi(MarkerInfoItem markerInfoItem) {
         mClusterManager.removeItem(mMarkerItems.get(markerInfoItem.getMarkerInfo().getId()));
         mMarkerItems.remove(markerInfoItem.getMarkerInfo().getId());
+        mClusterManager.cluster();
     }
 
 
@@ -305,6 +306,7 @@ public class MapsFragment extends Fragment
     private MarkerInfoItem placeMarkerOnMapAndGet(MarkerInfo markerInfo) {
         MarkerInfoItem markerInfoItem = new MarkerInfoItem(markerInfo);
         mClusterManager.addItem(markerInfoItem);
+        mClusterManager.cluster();
         return markerInfoItem;
     }
 
