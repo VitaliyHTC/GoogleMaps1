@@ -1,6 +1,7 @@
 package com.vitaliyhtc.googlemaps1.model;
 
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.raizlabs.android.dbflow.annotation.Column;
 import com.raizlabs.android.dbflow.structure.BaseModel;
 import com.vitaliyhtc.googlemaps1.R;
 
@@ -22,11 +23,16 @@ public class MarkerInfo extends BaseModel {
     };
     public static final int huesSize = hues.length;
 
+    @Column
     @PrimaryKey
     private String id;
+    @Column
     private double latitude;
+    @Column
     private double longitude;
+    @Column
     private String title;
+    @Column
     private float iconHue;
 
 
