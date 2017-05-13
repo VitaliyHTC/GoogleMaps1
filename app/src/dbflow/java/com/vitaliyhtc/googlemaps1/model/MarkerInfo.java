@@ -2,11 +2,14 @@ package com.vitaliyhtc.googlemaps1.model;
 
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.raizlabs.android.dbflow.annotation.Column;
+import com.raizlabs.android.dbflow.annotation.PrimaryKey;
+import com.raizlabs.android.dbflow.annotation.Table;
 import com.raizlabs.android.dbflow.structure.BaseModel;
 import com.vitaliyhtc.googlemaps1.R;
+import com.vitaliyhtc.googlemaps1.data.dbflow.DBFlowDatabase;
 
-import io.realm.annotations.PrimaryKey;
 
+@Table(database = DBFlowDatabase.class)
 public class MarkerInfo extends BaseModel {
 
     public static final float[] hues = {

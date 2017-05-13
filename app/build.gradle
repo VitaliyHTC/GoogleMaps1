@@ -3,7 +3,6 @@ apply plugin: 'realm-android'
 
 repositories {
     maven { url 'http://oss.jfrog.org/artifactory/oss-snapshot-local' }
-    maven { url "https://www.jitpack.io" }
 }
 
 android {
@@ -47,7 +46,7 @@ android {
 }
 
 
-def dbflow_version = "4.0.0-beta7"
+def dbflow_version = "4.0.1"
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
