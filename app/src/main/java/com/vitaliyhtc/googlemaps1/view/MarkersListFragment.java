@@ -20,9 +20,7 @@ import com.vitaliyhtc.googlemaps1.R;
 import com.vitaliyhtc.googlemaps1.adapter.MarkerInfoRecyclerViewAdapterImpl;
 import com.vitaliyhtc.googlemaps1.adapter.RecyclerViewAdapter;
 import com.vitaliyhtc.googlemaps1.data.DataMarkersGenerator;
-import com.vitaliyhtc.googlemaps1.data.DataStorageUtils;
 import com.vitaliyhtc.googlemaps1.data.MarkerInfoAllMarkersDeletedListener;
-import com.vitaliyhtc.googlemaps1.data.MarkerInfoStorage;
 import com.vitaliyhtc.googlemaps1.model.MarkerInfo;
 import com.vitaliyhtc.googlemaps1.presenter.MarkersListPresenter;
 import com.vitaliyhtc.googlemaps1.presenter.MarkersListPresenterImpl;
@@ -63,8 +61,6 @@ public class MarkersListFragment extends Fragment implements MarkersListView {
     private LatLng mPlaceSelected;
     private Double mRadiusSelected;
 
-    MarkerInfoStorage mMarkerInfoStorage;
-
     private MarkersListPresenter mMarkersListPresenter;
 
     private MarkerInfoRecyclerViewAdapterImpl mMarkerInfoRecyclerViewAdapter;
@@ -84,9 +80,6 @@ public class MarkersListFragment extends Fragment implements MarkersListView {
         mMarkersListPresenter = new MarkersListPresenterImpl();
         mMarkersListPresenter.onAttachView(MarkersListFragment.this);
 
-        mMarkerInfoStorage = DataStorageUtils.getMarkerInfoStorageInstance();
-        mMarkerInfoStorage.initResources();
-
         setUpRecyclerView();
         initDataGenerator();
     }
@@ -95,7 +88,6 @@ public class MarkersListFragment extends Fragment implements MarkersListView {
     public void onDestroy() {
         super.onDestroy();
         recyclerView.setAdapter(null);
-        mMarkerInfoStorage.releaseResources();
         mMarkersListPresenter.onDetachView();
     }
 
@@ -119,7 +111,7 @@ public class MarkersListFragment extends Fragment implements MarkersListView {
 
     @OnClick(R.id.iv_action_delete_all)
     void actionDeleteAll() {
-        mMarkerInfoStorage.deleteAllMarkers(new MarkerInfoAllMarkersDeletedListener() {
+        mMarkersListPresenter.actionDeleteAllMarkers(new MarkerInfoAllMarkersDeletedListener() {
             @Override
             public void onAllMarkersDeleted() {
                 mStatusTextView.setText("All markers deleted!");
@@ -221,8 +213,3 @@ public class MarkersListFragment extends Fragment implements MarkersListView {
     }
 
 }
-
-/**
- * TODO: це завдання можна переробити на 2 build flavors, один realm другий dbflow,
- * TODO: і реалізувати 2 різні реалізації для бази даних, які залежать від однієї абстракції
- */
