@@ -7,8 +7,7 @@ import com.raizlabs.android.dbflow.config.DatabaseConfig;
 import com.raizlabs.android.dbflow.config.FlowConfig;
 import com.raizlabs.android.dbflow.config.FlowManager;
 import com.raizlabs.android.dbflow.runtime.DirectModelNotifier;
-
-import io.realm.Realm;
+import com.vitaliyhtc.googlemaps1.data.dbflow.DBFlowDatabase;
 
 public class MyApplication extends Application {
     private static MyApplication sMyApplication;
@@ -19,16 +18,11 @@ public class MyApplication extends Application {
         super.onCreate();
 
         sMyApplication = this;
-        // TODO: 22.05.17 put this selection code into two separate classes in different builds that extends MyApplication class.
-        if (ConfigBuildFlavors.BUILD_FLAVOR_CURRENT == Config.BUILD_FLAVOR_DB_REALM) {
-            Realm.init(this);
-        }
-        if (ConfigBuildFlavors.BUILD_FLAVOR_CURRENT == Config.BUILD_FLAVOR_DB_DBFLOW) {
-            FlowManager.init(new FlowConfig.Builder(this)
-                    .addDatabaseConfig(new DatabaseConfig.Builder(DBFlowDatabase.class)
-                            .modelNotifier(DirectModelNotifier.get())
-                            .build()).build());
-        }
+
+        FlowManager.init(new FlowConfig.Builder(this)
+                .addDatabaseConfig(new DatabaseConfig.Builder(DBFlowDatabase.class)
+                        .modelNotifier(DirectModelNotifier.get())
+                        .build()).build());
     }
 
     public static Context getContext() {

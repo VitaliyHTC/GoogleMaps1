@@ -24,6 +24,7 @@ import com.karumi.dexter.listener.PermissionGrantedResponse;
 import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.single.PermissionListener;
 import com.vitaliyhtc.googlemaps1.R;
+import com.vitaliyhtc.googlemaps1.data.DataStorageUtils;
 import com.vitaliyhtc.googlemaps1.view.dialog.MapTypeDialog;
 import com.vitaliyhtc.googlemaps1.view.dialog.MarkerDialog;
 import com.vitaliyhtc.googlemaps1.view.dialog.MarkerInfoOptionsDialog;
@@ -78,7 +79,7 @@ public class MapsFragment extends Fragment
 
         mMarkerItems = new HashMap<>();
 
-        mMapsPresenter = new MapsPresenterImpl();
+        mMapsPresenter = new MapsPresenterImpl(DataStorageUtils.getMarkerInfoStorageInstance());
         mMapsPresenter.onAttachView(MapsFragment.this);
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -120,7 +121,12 @@ public class MapsFragment extends Fragment
         MapStateUtils.restoreCameraPositionOnMap(getContext(), mMap);
         MapStateUtils.restoreMapType(getContext(), mMap);
         requestPermissionAndEnableMyLocation();
-        initListeners();
+        mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+            @Override
+            public void onMapLongClick(LatLng latLng) {
+                mMapsPresenter.actionNewMarker(latLng);
+            }
+        });
         mMapsPresenter.getAllMarkers();
     }
 
@@ -290,16 +296,6 @@ public class MapsFragment extends Fragment
                 // Return false so that we don't consume the event and the default behavior still occurs
                 // (the camera animates to the user's current position).
                 return false;
-            }
-        });
-    }
-
-    // TODO: 22.05.17 This method name is very abstract, give it more concrete name  or put all listeners initialization here
-    private void initListeners() {
-        mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
-            @Override
-            public void onMapLongClick(LatLng latLng) {
-                mMapsPresenter.actionNewMarker(latLng);
             }
         });
     }

@@ -1,7 +1,6 @@
 package com.vitaliyhtc.googlemaps1.presenter;
 
 import com.google.android.gms.maps.model.LatLng;
-import com.vitaliyhtc.googlemaps1.data.DataStorageUtils;
 import com.vitaliyhtc.googlemaps1.data.MarkerInfoAllMarkersResultListener;
 import com.vitaliyhtc.googlemaps1.data.MarkerInfoRetrievedListener;
 import com.vitaliyhtc.googlemaps1.data.MarkerInfoStorage;
@@ -20,14 +19,13 @@ public class MapsPresenterImpl
 
     private MarkerInfoStorage mMarkerInfoStorage;
 
-    // TODO: 22.05.17 pass in MarkerInfoStorage to presenter constructor to support Dependency Injection for testing and better architecture decoupling
-    public MapsPresenterImpl() {
+    public MapsPresenterImpl(MarkerInfoStorage markerInfoStorage) {
+        mMarkerInfoStorage = markerInfoStorage;
     }
 
     @Override
     public void onAttachView(BaseView baseView) {
         mMapsView = (MapsView) baseView;
-        mMarkerInfoStorage = DataStorageUtils.getMarkerInfoStorageInstance();
         mMarkerInfoStorage.initResources();
     }
 

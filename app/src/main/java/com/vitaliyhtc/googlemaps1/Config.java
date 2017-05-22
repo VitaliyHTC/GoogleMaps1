@@ -6,9 +6,6 @@ import com.google.android.gms.maps.model.LatLng;
 
 public abstract class Config {
 
-    public static final int BUILD_FLAVOR_DB_REALM = 0x0000;
-    public static final int BUILD_FLAVOR_DB_DBFLOW = 0x0001;
-
     public static final String KEY_MARKER_ID = "id";
 
     public static final int RV_SELECTED_ON_BACKGROUND_COLOR = Color.LTGRAY;

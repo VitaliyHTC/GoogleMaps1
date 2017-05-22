@@ -1,14 +1,14 @@
-package com.vitaliyhtc.googlemaps1;
+package com.vitaliyhtc.googlemaps1.view;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 
+import com.vitaliyhtc.googlemaps1.R;
 import com.vitaliyhtc.googlemaps1.adapter.ViewPagerAdapter;
 import com.vitaliyhtc.googlemaps1.view.lib.SlidingTabLayout;
 
-// TODO: 22.05.17 move it to view package
 public class MainActivity extends AppCompatActivity {
 
     private int numberOfTabs = 2;
