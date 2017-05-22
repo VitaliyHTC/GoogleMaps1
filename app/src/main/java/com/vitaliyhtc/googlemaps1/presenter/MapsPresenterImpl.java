@@ -20,7 +20,7 @@ public class MapsPresenterImpl
 
     private MarkerInfoStorage mMarkerInfoStorage;
 
-
+    // TODO: 22.05.17 pass in MarkerInfoStorage to presenter constructor to support Dependency Injection for testing and better architecture decoupling
     public MapsPresenterImpl() {
     }
 

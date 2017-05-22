@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import com.vitaliyhtc.googlemaps1.adapter.ViewPagerAdapter;
 import com.vitaliyhtc.googlemaps1.view.lib.SlidingTabLayout;
 
+// TODO: 22.05.17 move it to view package
 public class MainActivity extends AppCompatActivity {
 
     private int numberOfTabs = 2;

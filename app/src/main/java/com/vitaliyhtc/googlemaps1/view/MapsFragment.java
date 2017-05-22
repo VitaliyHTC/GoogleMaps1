@@ -294,6 +294,7 @@ public class MapsFragment extends Fragment
         });
     }
 
+    // TODO: 22.05.17 This method name is very abstract, give it more concrete name  or put all listeners initialization here
     private void initListeners() {
         mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
             @Override
