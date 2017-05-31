@@ -35,6 +35,7 @@ public class MarkersListPresenterImpl implements MarkersListPresenter {
         mMarkerInfoStorage.releaseResources();
     }
 
+    // TODO: 31/05/17 adapter should not be connected to storage !!!
     @Override
     public void subscribeForMarkersInfoData(RecyclerViewAdapter<MarkerInfo> adapter) {
         mMarkersListStorage.subscribeForMarkersInfoData(adapter);

@@ -22,6 +22,8 @@ public class MarkersListRealmStorageImpl implements MarkersListStorage {
         storage.onDetachedFromRecyclerView();
     }
 
+    // TODO: 31/05/17 addapter is ui part and it should not be connected with storage.
+    // you need to use listener to listen for DB update and send data to presenter -> view -> adapter
     @Override
     public void subscribeForMarkersInfoData(RecyclerViewAdapter<MarkerInfo> adapter) {
         storage =
