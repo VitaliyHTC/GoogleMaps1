@@ -7,9 +7,9 @@ import com.raizlabs.android.dbflow.sql.language.CursorResult;
 import com.raizlabs.android.dbflow.sql.language.SQLite;
 import com.raizlabs.android.dbflow.structure.BaseModel;
 import com.raizlabs.android.dbflow.structure.database.transaction.QueryTransaction;
-import com.vitaliyhtc.googlemaps1.adapter.RecyclerViewAdapter;
 import com.vitaliyhtc.googlemaps1.data.MarkersListStorage;
 import com.vitaliyhtc.googlemaps1.model.MarkerInfo;
+import com.vitaliyhtc.googlemaps1.presenter.DataChangesListener;
 import com.vitaliyhtc.googlemaps1.util.MainThreadUtils;
 
 import java.util.ArrayList;
@@ -19,7 +19,7 @@ import java.util.Map;
 
 public class MarkerListDBFlowStorageImpl implements MarkersListStorage {
 
-    private RecyclerViewAdapter<MarkerInfo> mAdapter;
+    private DataChangesListener<MarkerInfo> mChangesListener;
     private Map<String, MarkerInfo> mMarkers;
     private DirectModelNotifier.ModelChangedListener<MarkerInfo> mModelChangedListener;
 
@@ -34,9 +34,9 @@ public class MarkerListDBFlowStorageImpl implements MarkersListStorage {
     }
 
     @Override
-    public void subscribeForMarkersInfoData(RecyclerViewAdapter<MarkerInfo> adapter) {
-        adapter.setData(new ArrayList<MarkerInfo>());
-        mAdapter = adapter;
+    public void subscribeForMarkersInfoData(DataChangesListener<MarkerInfo> listener) {
+        listener.setData(new ArrayList<MarkerInfo>());
+        mChangesListener = listener;
         SQLite.select()
                 .from(MarkerInfo.class)
                 .async()
@@ -63,8 +63,8 @@ public class MarkerListDBFlowStorageImpl implements MarkersListStorage {
             public void run() {
                 List<MarkerInfo> markers = new ArrayList<>();
                 markers.addAll(markersMap.values());
-                mAdapter.setData(markers);
-                mAdapter.notifyDataSetChanged();
+                mChangesListener.setData(markers);
+                mChangesListener.notifyDataSetChanged();
             }
         });
     }

@@ -34,6 +34,7 @@ import com.vitaliyhtc.googlemaps1.presenter.MapsPresenter;
 import com.vitaliyhtc.googlemaps1.presenter.MapsPresenterImpl;
 import com.vitaliyhtc.googlemaps1.util.MapStateUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -155,8 +156,8 @@ public class MapsFragment extends Fragment
 
     @Override
     public void onAllMarkersRetrieved(List<MarkerInfo> markers) {
-        for (MarkerInfo markerInfo : markers) {
-            placeNewMarkerOnMap(markerInfo);
+        for (MarkerInfoItem item : placeMarkersOnMapAndGet(markers)) {
+            mMarkerItems.put(item.getMarkerInfo().getId(), item);
         }
     }
 
@@ -305,6 +306,16 @@ public class MapsFragment extends Fragment
         mClusterManager.addItem(markerInfoItem);
         mClusterManager.cluster();
         return markerInfoItem;
+    }
+
+    private List<MarkerInfoItem> placeMarkersOnMapAndGet(List<MarkerInfo> markerInfoList) {
+        List<MarkerInfoItem> itemsList = new ArrayList<>();
+        for (MarkerInfo markerInfo : markerInfoList) {
+            itemsList.add(new MarkerInfoItem(markerInfo));
+        }
+        mClusterManager.addItems(itemsList);
+        mClusterManager.cluster();
+        return itemsList;
     }
 
     private void showToastShort(String message) {

@@ -22,6 +22,7 @@ import com.vitaliyhtc.googlemaps1.adapter.RecyclerViewAdapter;
 import com.vitaliyhtc.googlemaps1.data.DataMarkersGenerator;
 import com.vitaliyhtc.googlemaps1.data.MarkerInfoAllMarkersDeletedListener;
 import com.vitaliyhtc.googlemaps1.model.MarkerInfo;
+import com.vitaliyhtc.googlemaps1.presenter.DataChangesListenerImpl;
 import com.vitaliyhtc.googlemaps1.presenter.MarkersListPresenter;
 import com.vitaliyhtc.googlemaps1.presenter.MarkersListPresenterImpl;
 
@@ -143,7 +144,7 @@ public class MarkersListFragment extends Fragment implements MarkersListView {
     }
 
     private void fillMarkersData(RecyclerViewAdapter<MarkerInfo> adapter) {
-        mMarkersListPresenter.subscribeForMarkersInfoData(adapter);
+        mMarkersListPresenter.subscribeForMarkersInfoData(new DataChangesListenerImpl<MarkerInfo>(adapter));
     }
 
     private void initDataGenerator() {

@@ -1,6 +1,5 @@
 package com.vitaliyhtc.googlemaps1.presenter;
 
-import com.vitaliyhtc.googlemaps1.adapter.RecyclerViewAdapter;
 import com.vitaliyhtc.googlemaps1.data.DataStorageUtils;
 import com.vitaliyhtc.googlemaps1.data.MarkerInfoAllMarkersDeletedListener;
 import com.vitaliyhtc.googlemaps1.data.MarkerInfoStorage;
@@ -35,10 +34,9 @@ public class MarkersListPresenterImpl implements MarkersListPresenter {
         mMarkerInfoStorage.releaseResources();
     }
 
-    // TODO: 31/05/17 adapter should not be connected to storage !!!
     @Override
-    public void subscribeForMarkersInfoData(RecyclerViewAdapter<MarkerInfo> adapter) {
-        mMarkersListStorage.subscribeForMarkersInfoData(adapter);
+    public void subscribeForMarkersInfoData(DataChangesListener<MarkerInfo> listener) {
+        mMarkersListStorage.subscribeForMarkersInfoData(listener);
     }
 
     @Override

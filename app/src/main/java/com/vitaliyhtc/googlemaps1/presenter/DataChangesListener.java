@@ -1,13 +1,12 @@
-package com.vitaliyhtc.googlemaps1.adapter;
+package com.vitaliyhtc.googlemaps1.presenter;
 
 import java.util.List;
 
 /**
- * Used for {@code DataChangesListener<T>}
- *
- * @param <T> type of Model stored in the adapter
+ * Created by vitaliyhtc on 16.06.17.
  */
-public interface RecyclerViewAdapter<T> {
+
+public interface DataChangesListener<T> {
     void setData(List<T> data);
     void notifyDataSetChanged();
     void notifyItemRangeRemoved(int positionStart, int itemCount);
