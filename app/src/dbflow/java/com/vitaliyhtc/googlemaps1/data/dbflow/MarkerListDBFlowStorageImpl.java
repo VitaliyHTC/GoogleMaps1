@@ -19,8 +19,11 @@ import java.util.Map;
 
 public class MarkerListDBFlowStorageImpl implements MarkersListStorage {
 
+    private static final int NO_POSITION = -1;
+
     private DataChangesListener<MarkerInfo> mChangesListener;
     private Map<String, MarkerInfo> mMarkers;
+    private List<MarkerInfo> oldMarkersList = new ArrayList<>();
     private DirectModelNotifier.ModelChangedListener<MarkerInfo> mModelChangedListener;
 
     @Override
@@ -63,8 +66,56 @@ public class MarkerListDBFlowStorageImpl implements MarkersListStorage {
             public void run() {
                 List<MarkerInfo> markers = new ArrayList<>();
                 markers.addAll(markersMap.values());
+                oldMarkersList.clear();
+                oldMarkersList.addAll(markers);
                 mChangesListener.setData(markers);
                 mChangesListener.notifyDataSetChanged();
+            }
+        });
+    }
+
+    private void pushNewDataToAdapter(MarkerInfo model, final BaseModel.Action action) {
+        final ArrayList<MarkerInfo> mMarkersList = new ArrayList<>();
+        if (action == BaseModel.Action.CHANGE || action == BaseModel.Action.UPDATE ||
+                action == BaseModel.Action.INSERT || action == BaseModel.Action.SAVE)
+            mMarkers.put(model.getId(), model);
+        if (action == BaseModel.Action.DELETE)
+            mMarkers.remove(model.getId());
+        mMarkersList.addAll(mMarkers.values());
+
+        int changedItemPosition1 = NO_POSITION;
+        if (action != BaseModel.Action.INSERT && action != BaseModel.Action.SAVE &&
+                action != BaseModel.Action.DELETE) {
+            MarkerInfo markerInfo;
+            for (int i = 0; i < oldMarkersList.size(); i++) {
+                markerInfo = oldMarkersList.get(i);
+                if (markerInfo.getId().equals(model.getId()))
+                    changedItemPosition1 = i;
+            }
+        }
+        final int changedItemPosition = changedItemPosition1;
+        oldMarkersList.clear();
+        oldMarkersList.addAll(mMarkersList);
+        final int oldMarkersListSize = oldMarkersList.size();
+
+        MainThreadUtils.post(new Runnable() {
+            @Override
+            public void run() {
+                mChangesListener.setData(mMarkersList);
+                if (changedItemPosition == NO_POSITION) {
+                    if (action == BaseModel.Action.INSERT || action == BaseModel.Action.SAVE) {
+                        mChangesListener.notifyItemRangeInserted(oldMarkersListSize, 1);
+                    } else {
+                        mChangesListener.notifyDataSetChanged();
+                    }
+                } else {
+                    if (action == BaseModel.Action.CHANGE || action == BaseModel.Action.UPDATE)
+                        mChangesListener.notifyItemRangeChanged(changedItemPosition, 1);
+                    if (action == BaseModel.Action.INSERT || action == BaseModel.Action.SAVE)
+                        mChangesListener.notifyItemRangeInserted(changedItemPosition, 1);
+                    if (action == BaseModel.Action.DELETE)
+                        mChangesListener.notifyItemRangeRemoved(changedItemPosition, 1);
+                }
             }
         });
     }
@@ -75,16 +126,7 @@ public class MarkerListDBFlowStorageImpl implements MarkersListStorage {
             public void onModelChanged(MarkerInfo model, BaseModel.Action action) {
                 // react to model changes
                 //Log.e("_DBFlow", "onModelChanged: action: " + action.name() + "; model: " + model.getTitle());
-                if (action == BaseModel.Action.CHANGE ||
-                        action == BaseModel.Action.INSERT ||
-                        action == BaseModel.Action.SAVE ||
-                        action == BaseModel.Action.UPDATE) {
-                    mMarkers.put(model.getId(), model);
-                }
-                if (action == BaseModel.Action.DELETE) {
-                    mMarkers.remove(model.getId());
-                }
-                pushNewDataToAdapter(mMarkers);
+                pushNewDataToAdapter(model, action);
             }
 
             @Override

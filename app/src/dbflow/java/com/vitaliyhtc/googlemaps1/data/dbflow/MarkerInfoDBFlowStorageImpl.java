@@ -33,7 +33,7 @@ public class MarkerInfoDBFlowStorageImpl implements MarkerInfoStorage {
     @Override
     public void saveMarker(final MarkerInfo markerInfo) {
         FastStoreModelTransaction
-                .insertBuilder(FlowManager.getModelAdapter(MarkerInfo.class))
+                .saveBuilder(FlowManager.getModelAdapter(MarkerInfo.class))
                 .add(markerInfo)
                 .build()
                 .execute(FlowManager.getWritableDatabase(DBFlowDatabase.class));

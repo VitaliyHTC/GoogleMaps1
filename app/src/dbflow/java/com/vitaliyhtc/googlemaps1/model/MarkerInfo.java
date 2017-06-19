@@ -116,4 +116,33 @@ public class MarkerInfo extends BaseModel {
     public void setIconHue(float iconHue) {
         this.iconHue = iconHue;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        MarkerInfo that = (MarkerInfo) o;
+
+        if (Double.compare(that.latitude, latitude) != 0) return false;
+        if (Double.compare(that.longitude, longitude) != 0) return false;
+        if (Float.compare(that.iconHue, iconHue) != 0) return false;
+        if (!id.equals(that.id)) return false;
+        return title != null ? title.equals(that.title) : that.title == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result;
+        long temp;
+        result = id.hashCode();
+        temp = Double.doubleToLongBits(latitude);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
+        temp = Double.doubleToLongBits(longitude);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
+        result = 31 * result + (title != null ? title.hashCode() : 0);
+        result = 31 * result + (iconHue != +0.0f ? Float.floatToIntBits(iconHue) : 0);
+        return result;
+    }
 }
